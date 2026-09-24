@@ -1,15 +1,6 @@
 ﻿using System.Windows;
 using AnyCard.Desktop.Models;
 using AnyCard.Desktop.Services;
-using System.Text;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace AnyCard.Desktop;
 /// <summary>
@@ -30,7 +21,7 @@ public partial class MainWindow : Window
         var apiResult = await _apiClient.GetDueCardsAsync();
         if(apiResult.Error != ApiError.None)
         {
-            MessageBox.Show("Fehler beim Laden der Karten.");
+            MessageBox.Show("Fehler beim Laden der Karten.!");
             _dueCards = new List<CardDto>();
         }
         else
@@ -64,7 +55,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            QuestionText.Text = "Keine Karten verfügbar.";
+            QuestionText.Text = "Keine Karten verfügbar.!";
             ShowAnswerButton.Visibility = Visibility.Collapsed; 
         }
     }
@@ -161,6 +152,7 @@ public partial class MainWindow : Window
     }
     private void BackToCardsButton_Click(object sender, RoutedEventArgs e)
     {
+        ShowCurrentCard();
         CreateCardPanel.Visibility = Visibility.Collapsed;
         CardPanel.Visibility = Visibility.Visible;
         CreateNewCardButton.Visibility = Visibility.Visible;
