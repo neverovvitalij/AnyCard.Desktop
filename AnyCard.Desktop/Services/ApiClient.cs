@@ -54,6 +54,26 @@ public class ApiClient
                 return new ApiResult<List<CardDto>>(null, ApiError.ServerError);
         }
     }
+    public async Task<ApiResult<List<CategoryDto>>> GetCategoriesAsync()
+    {
+        try
+        {
+            var categoriesRequest = await _httpClient.GetFromJsonAsync<List<CategoryDto>?>("categories");
+            return new ApiResult<List<CategoryDto>>(categoriesRequest, ApiError.None);
+        }
+        catch (HttpRequestException ex)
+        {
+            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<List<CategoryDto>>(null, ApiError.Unauthorized);
+            }
+            if (ex.StatusCode == null)
+            {
+                return new ApiResult<List<CategoryDto>>(null, ApiError.NetworkUnavailable);
+            }
+            return new ApiResult<List<CategoryDto>>(null, ApiError.ServerError);
+        }
+    }
 
     public async Task<ApiResult<bool>> ReviewCardAsync(int cardId, UserRating userRating)
     {
@@ -72,6 +92,29 @@ public class ApiClient
                 return new ApiResult<bool>(false, ApiError.ServerError);
         }
         catch(HttpRequestException)
+        {
+            return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
+        }
+    }
+
+    public async Task<ApiResult<bool>> CreateCardAsync(string question, string answer, int categoryId = 1)
+    {
+        try
+        {
+            var createCardDto = new CreateCardDto(question, answer, categoryId);
+            var apiResponse = await _httpClient.PostAsJsonAsync("cards", createCardDto);
+                if(apiResponse.IsSuccessStatusCode)
+                    {
+                     return new ApiResult<bool>(true, ApiError.None);
+                    }
+                if(apiResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                {
+                    return new ApiResult<bool>(false, ApiError.Unauthorized);
+                }
+                return new ApiResult<bool>(false, ApiError.ServerError);
+
+        }
+        catch (HttpRequestException)
         {
             return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
         }
