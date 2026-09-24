@@ -6,10 +6,31 @@
         xmlns:local="clr-namespace:AnyCard.Desktop"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
+    <Grid>
+        <StackPanel x:Name="LoginPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Width="300">
         <TextBlock TextAlignment="Center" Margin="0,0,0,10">AnyCard Login</TextBlock>
         <TextBox Margin="0,0,0,10" x:Name="UsernameTextBox"/>
         <PasswordBox Margin="0,0,0,10" x:Name="UserPassword"/>
         <Button Margin="0,10,0,0" x:Name="LoginButton" Content="Login" Click="LoginButton_Click"/>
     </StackPanel>
+        <Button x:Name="CreateNewCardButton" Content="Neue Karte erstellen" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10" Click="CreateNewCardButton_Click" Visibility="Collapsed"/>
+        <Button x:Name="BackToCardsButton" Content="Zurück zu den Karten" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10" Click="BackToCardsButton_Click" Visibility="Collapsed"/>
+        <StackPanel x:Name="CardPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Width="300" Visibility="Collapsed">
+            <TextBlock x:Name="QuestionText" TextAlignment="Center" Margin="0,0,0,10">QuestionText</TextBlock>
+            <TextBlock x:Name="AnswerText" TextAlignment="Center" Margin="0,0,0,10" Visibility="Collapsed">AnswerText</TextBlock>
+            <Button x:Name="ShowAnswerButton" Margin="0,10,0,0"  Content="Show Answer" Click="ShowAnswerButton_Click"/>
+            <StackPanel x:Name="RatingButtonsPanel" Orientation="Horizontal" Visibility="Collapsed">
+                <Button x:Name="AgainButton" Content="Again" Margin="5" Click="AgainButton_Click"/>
+                <Button x:Name="EasyButton" Content="Easy" Margin="5" Click="EasyButton_Click"/>
+                <Button x:Name="GoodButton" Content="Good" Margin="5" Click="GoodButton_Click"/>
+                <Button x:Name="HardButton" Content="Hard" Margin="5" Click="HardButton_Click"/>
+            </StackPanel>
+        </StackPanel>
+        <StackPanel x:Name="CreateCardPanel" HorizontalAlignment="Center" VerticalAlignment="Center" Width="300" Visibility="Collapsed">
+            <TextBlock TextAlignment="Center" Margin="0,0,0,10">Neue Karte erstellen</TextBlock>
+            <TextBox Margin="0,0,0,10" x:Name="NewQuestionTextBox"/>
+            <TextBox Margin="0,0,0,10" x:Name="NewAnswerTextBox"/>
+            <Button Margin="0,10,0,0" x:Name="CreateCardButton" Content="Karte erstellen" Click="CreateCardButton_Click"/>
+        </StackPanel>
+    </Grid>
 </Window>
