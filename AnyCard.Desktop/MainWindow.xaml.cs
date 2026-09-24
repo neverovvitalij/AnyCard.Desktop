@@ -1,7 +1,7 @@
-﻿using AnyCard.Desktop.Models;
+﻿using System.Windows;
+using AnyCard.Desktop.Models;
 using AnyCard.Desktop.Services;
 using System.Text;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -17,9 +17,26 @@ namespace AnyCard.Desktop;
 /// </summary>
 public partial class MainWindow : Window
 {
+    private readonly ApiClient _apiClient = new();
     public MainWindow()
     {
         InitializeComponent();
+    }
+
+    private async void LoginButton_Click(object sender, RoutedEventArgs e)
+    {
+        string username = UsernameTextBox.Text;
+        string password = UserPassword.Password;
+       
+        var authResponse = await _apiClient.LoginAsync(username, password);
+        if(authResponse != null)
+        {
+            MessageBox.Show("Login erfolgreich!");
+        }
+        else
+        {
+            MessageBox.Show("Benutzername oder Passwort falsch.");
+        }
     }
 }
 
