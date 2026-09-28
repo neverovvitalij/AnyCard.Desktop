@@ -34,43 +34,84 @@ public class ApiClient
         return null;
     }
 
+    private async Task<bool> RefreshTokenAsync()
+    {
+        if (string.IsNullOrEmpty(_refreshToken))
+        {
+            return false;
+        }
+
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("auth/refresh", new RefreshDto(_refreshToken));
+            if(!response.IsSuccessStatusCode)
+            {
+                return false;
+            }
+            var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+            if(authResponseDto == null)
+            {
+                return false;
+            }
+
+            _accessToken = authResponseDto?.AccessToken;
+            _refreshToken = authResponseDto?.RefreshToken;
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto?.AccessToken);
+            return true;
+        }
+        catch (HttpRequestException)
+        {
+            return false;
+        }
+    }
+
     public async Task<ApiResult<List<CardDto>>> GetDueCardsAsync()
     {
         try
         {
-        var dueCardsRequest = await _httpClient.GetFromJsonAsync<List<CardDto>?>("progress");
-            return new ApiResult<List<CardDto>>(dueCardsRequest, ApiError.None);
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        var response = await SendAsync(() => _httpClient.GetAsync("progress"));
+            if (response.IsSuccessStatusCode)
+            {
+                var dueCardsRequest = await response.Content.ReadFromJsonAsync<List<CardDto>>();
+                return new ApiResult<List<CardDto>>(dueCardsRequest, ApiError.None);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 return new ApiResult<List<CardDto>>(null, ApiError.Unauthorized);
             }
-            if(ex.StatusCode == null)
-            {
+            return new ApiResult<List<CardDto>>(null, ApiError.ServerError);
+        }
+        catch (HttpRequestException )
+        {
                 return new ApiResult<List<CardDto>>(null, ApiError.NetworkUnavailable);
-            }
-                return new ApiResult<List<CardDto>>(null, ApiError.ServerError);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<List<CardDto>>(null, ApiError.ServerError);
         }
     }
     public async Task<ApiResult<List<CategoryDto>>> GetCategoriesAsync()
     {
         try
         {
-            var categoriesRequest = await _httpClient.GetFromJsonAsync<List<CategoryDto>?>("categories");
-            return new ApiResult<List<CategoryDto>>(categoriesRequest, ApiError.None);
-        }
-        catch (HttpRequestException ex)
-        {
-            if (ex.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            var response = await SendAsync(() => _httpClient.GetAsync("categories"));
+            if (response.IsSuccessStatusCode)
+            {
+                var categories = await response.Content.ReadFromJsonAsync<List<CategoryDto>>();
+                return new ApiResult<List<CategoryDto>>(categories, ApiError.None);
+            }
+            if(response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 return new ApiResult<List<CategoryDto>>(null, ApiError.Unauthorized);
             }
-            if (ex.StatusCode == null)
-            {
-                return new ApiResult<List<CategoryDto>>(null, ApiError.NetworkUnavailable);
-            }
+            return new ApiResult<List<CategoryDto>>(null, ApiError.ServerError);
+        }
+        catch (HttpRequestException)
+        {
+            return new ApiResult<List<CategoryDto>>(null, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
             return new ApiResult<List<CategoryDto>>(null, ApiError.ServerError);
         }
     }
@@ -80,7 +121,7 @@ public class ApiClient
         try
         {
             var reviewCardDto = new ReviewCardDto(cardId, userRating);
-            var reviewCardRequest = await _httpClient.PutAsJsonAsync("progress", reviewCardDto);
+            var reviewCardRequest = await SendAsync(()=> _httpClient.PutAsJsonAsync("progress", reviewCardDto));
             if(reviewCardRequest.IsSuccessStatusCode == true)
             {
                 return new ApiResult<bool>(true, ApiError.None);
@@ -102,7 +143,7 @@ public class ApiClient
         try
         {
             var createCardDto = new CreateCardDto(question, answer, categoryId);
-            var apiResponse = await _httpClient.PostAsJsonAsync("cards", createCardDto);
+            var apiResponse = await SendAsync(() => _httpClient.PostAsJsonAsync("cards", createCardDto));
                 if(apiResponse.IsSuccessStatusCode)
                     {
                      return new ApiResult<bool>(true, ApiError.None);
@@ -125,7 +166,7 @@ public class ApiClient
         try
         {
             var createCategoryDto = new CreateCategoryDto(categoryName);
-            var apiResponse = await _httpClient.PostAsJsonAsync("categories", createCategoryDto);
+            var apiResponse = await SendAsync(()=> _httpClient.PostAsJsonAsync("categories", createCategoryDto));
             if(apiResponse.IsSuccessStatusCode)
             {
                 var categoryDto = await apiResponse.Content.ReadFromJsonAsync<CategoryDto>();
@@ -145,6 +186,25 @@ public class ApiClient
         {
             return new ApiResult<CategoryDto>(null, ApiError.NetworkUnavailable);
 
+        }
+    }
+
+    private async Task<HttpResponseMessage> SendAsync(Func<Task<HttpResponseMessage>> request)
+    {
+        var response = await request();
+        if(response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
+        {
+           return response;
+        }
+        else 
+        {
+            var refreshResult = await RefreshTokenAsync();
+            if (!refreshResult)
+            {
+                return response;
+            }
+            response.Dispose();
+                return await request();
         }
     }
 }
