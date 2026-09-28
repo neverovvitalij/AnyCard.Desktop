@@ -97,7 +97,7 @@ public class ApiClient
         }
     }
 
-    public async Task<ApiResult<bool>> CreateCardAsync(string question, string answer, int categoryId = 1)
+    public async Task<ApiResult<bool>> CreateCardAsync(string question, string answer, int categoryId)
     {
         try
         {
@@ -117,6 +117,34 @@ public class ApiClient
         catch (HttpRequestException)
         {
             return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
+        }
+    }
+
+    public async Task<ApiResult<CategoryDto>> CreateCategoryAsync(string categoryName)
+    {
+        try
+        {
+            var createCategoryDto = new CreateCategoryDto(categoryName);
+            var apiResponse = await _httpClient.PostAsJsonAsync("categories", createCategoryDto);
+            if(apiResponse.IsSuccessStatusCode)
+            {
+                var categoryDto = await apiResponse.Content.ReadFromJsonAsync<CategoryDto>();
+                return new ApiResult<CategoryDto>(categoryDto, ApiError.None);
+            }
+            if (apiResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<CategoryDto>(null, ApiError.Unauthorized);
+            }
+            if(apiResponse.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                return new ApiResult<CategoryDto>(null, ApiError.Conflict);
+            }
+            return new ApiResult<CategoryDto>(null, ApiError.ServerError);
+        }
+        catch (HttpRequestException)
+        {
+            return new ApiResult<CategoryDto>(null, ApiError.NetworkUnavailable);
+
         }
     }
 }

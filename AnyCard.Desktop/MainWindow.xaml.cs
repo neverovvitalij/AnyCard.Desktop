@@ -3,14 +3,12 @@ using AnyCard.Desktop.Models;
 using AnyCard.Desktop.Services;
 
 namespace AnyCard.Desktop;
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
 public partial class MainWindow : Window
 {
     private readonly ApiClient _apiClient = new();
     private List<CardDto> _dueCards = new();
     private int _currentCardIndex = 0;
+    private List<CategoryDto> _categories = new();
     public MainWindow()
     {
         InitializeComponent();
@@ -40,8 +38,8 @@ public partial class MainWindow : Window
         }
         else
         {
-            var categories = apiResult.Data ?? new List<CategoryDto>();
-            CategoryComboBox.ItemsSource = categories;
+            _categories = apiResult.Data ?? new List<CategoryDto>();
+            CategoryComboBox.ItemsSource = _categories;
         }
     }
     private void ShowCurrentCard()
@@ -52,11 +50,14 @@ public partial class MainWindow : Window
             QuestionText.Text = currentCard.Question;
             AnswerText.Text = currentCard.Answer;
             ShowAnswerButton.Visibility = Visibility.Visible;
+            HideAnswerButton.Visibility = Visibility.Collapsed;
+            RatingButtonsPanel.Visibility = Visibility.Collapsed;
         }
         else
         {
-            QuestionText.Text = "Keine Karten verfügbar.!";
+            QuestionText.Text = "Keine Karten verfügbar.";
             ShowAnswerButton.Visibility = Visibility.Collapsed; 
+            HideAnswerButton.Visibility = Visibility.Collapsed;
         }
     }
     private async Task LoadNextCard(int cardId, UserRating userRating)
@@ -102,12 +103,22 @@ public partial class MainWindow : Window
     {
         AnswerText.Visibility = Visibility.Visible;
         RatingButtonsPanel.Visibility = Visibility.Visible;
+        HideAnswerButton.Visibility = Visibility.Visible;
+        ShowAnswerButton.Visibility = Visibility.Collapsed;
+    }
+    private void HideAnswerButton_Click(object sender, RoutedEventArgs e)
+    {
+        AnswerText.Visibility = Visibility.Collapsed;
+        RatingButtonsPanel.Visibility = Visibility.Collapsed;
+        HideAnswerButton.Visibility = Visibility.Collapsed;
+        ShowAnswerButton.Visibility = Visibility.Visible;
     }
     private async void AgainButton_Click(object sender, RoutedEventArgs e)
     {
         await LoadNextCard(_dueCards[_currentCardIndex].Id, UserRating.Again);
         AnswerText.Visibility = Visibility.Collapsed;
         RatingButtonsPanel.Visibility = Visibility.Collapsed;
+
     }
     private async void EasyButton_Click(object sender, RoutedEventArgs e)
     {
@@ -129,34 +140,68 @@ public partial class MainWindow : Window
     }
     private async void CreateCardButton_Click(object sender, RoutedEventArgs e)
     {
-        var selectedCategory = CategoryComboBox.SelectedItem as CategoryDto;
-        if (selectedCategory == null)
+        var categoryName = CategoryComboBox.Text.Trim();
+        var qestion = NewQuestionTextBox.Text.Trim();
+        var answer = NewAnswerTextBox.Text.Trim();
+        if (string.IsNullOrEmpty(qestion) || string.IsNullOrEmpty(answer))
         {
-            MessageBox.Show("Bitte wählen Sie eine Kategorie aus.");
+            MessageBox.Show("Bitte füllen Sie Frage und Antwort aus.");
             return;
         }
-        int categoryId = selectedCategory.Id;
+        if (string.IsNullOrEmpty(categoryName))
+        {
+            MessageBox.Show("Bitte geben Sie einen Kategorienamen ein.");
+            return;
+        }
+        var category = _categories.FirstOrDefault(c => c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+        if (category == null)
+        {
+            var apiResult = await _apiClient.CreateCategoryAsync(categoryName);
+            if (apiResult.Error == ApiError.None && apiResult.Data != null)
+            {
+                category = apiResult.Data;
+            }
+            else if (apiResult.Error == ApiError.Conflict)
+            {
+                await LoadCategoriesAsync();
+                category = _categories.FirstOrDefault(c =>
+                c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                MessageBox.Show("Fehler beim Erstellen der Kategorie.");
+                return;
+            }
+        }
+        if (category == null)
+        {
+            MessageBox.Show("Kategorie konnte nicht ermittelt werden.");
+            return;
+        }
+        var cardResult = await _apiClient.CreateCardAsync(
+        NewQuestionTextBox.Text, NewAnswerTextBox.Text, category.Id);
 
-        var apiResult = await _apiClient.CreateCardAsync(NewQuestionTextBox.Text, NewAnswerTextBox.Text,  categoryId);
-        if(apiResult.Error != ApiError.None)
+        if (cardResult.Error != ApiError.None)
         {
             MessageBox.Show("Fehler beim Erstellen der Karte.");
+            return;
         }
-        else
-        {
-            MessageBox.Show("Karte erfolgreich erstellt.");
-            await LoadDueCardsAsync();
-            NewQuestionTextBox.Clear();
-            NewAnswerTextBox.Clear();
-        }
+
+        await LoadCategoriesAsync();
+        await LoadDueCardsAsync();
+        NewQuestionTextBox.Clear();
+        NewAnswerTextBox.Clear();
+        CategoryComboBox.Text = string.Empty;
+        MessageBox.Show("Karte erfolgreich erstellt.");
     }
-    private void BackToCardsButton_Click(object sender, RoutedEventArgs e)
+    private async void BackToCardsButton_Click(object sender, RoutedEventArgs e)
     {
-        ShowCurrentCard();
+        await LoadDueCardsAsync();
         CreateCardPanel.Visibility = Visibility.Collapsed;
         CardPanel.Visibility = Visibility.Visible;
         CreateNewCardButton.Visibility = Visibility.Visible;
         BackToCardsButton.Visibility = Visibility.Collapsed;
+        AnswerText.Visibility = Visibility.Collapsed;
     }
 }
 

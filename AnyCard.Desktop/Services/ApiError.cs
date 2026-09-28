@@ -6,5 +6,6 @@ public enum ApiError
     None, 
     Unauthorized, 
     NetworkUnavailable, 
-    ServerError
+    ServerError,
+    Conflict
 }
