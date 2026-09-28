@@ -76,17 +76,24 @@ public partial class MainWindow : Window
         string username = UsernameTextBox.Text;
         string password = UserPassword.Password;
        
-        var authResponse = await _apiClient.LoginAsync(username, password);
-        if(authResponse != null)
+        var result = await _apiClient.LoginAsync(username, password);
+        switch(result.Error)
         {
-            LoginPanel.Visibility = Visibility.Collapsed;
-            CardPanel.Visibility = Visibility.Visible;
-            CreateNewCardButton.Visibility = Visibility.Visible;
-            await LoadDueCardsAsync();
-        }
-        else
-        {
-            MessageBox.Show("Benutzername oder Passwort falsch.");
+            case ApiError.None:
+                LoginPanel.Visibility = Visibility.Collapsed;
+                CardPanel.Visibility = Visibility.Visible;
+                CreateNewCardButton.Visibility = Visibility.Visible;
+                await LoadDueCardsAsync();
+                break;
+            case ApiError.Unauthorized:
+                MessageBox.Show("Benutzername oder Passwort falsch.");
+                break;
+            case ApiError.NetworkUnavailable:
+                MessageBox.Show("Server nicht erreichbar.");
+                break;
+            default:
+                MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+                break;
         }
     }
 

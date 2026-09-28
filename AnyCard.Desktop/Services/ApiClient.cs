@@ -18,20 +18,40 @@ public class ApiClient
         };
     }
 
-    public async Task<AuthResponseDto?> LoginAsync(string username, string password)
+    public async Task<ApiResult<AuthResponseDto?>> LoginAsync(string username, string password)
     {
-        var loginRequest = await _httpClient.PostAsJsonAsync("auth/login", new { username, password });
-        if (loginRequest.IsSuccessStatusCode)
+        try
         {
-            var authResponseDto = await loginRequest.Content.ReadFromJsonAsync<AuthResponseDto>();
+            var response = await _httpClient.PostAsJsonAsync("auth/login", new LoginDto(username, password));
+            if (response.IsSuccessStatusCode)
+            {
+                var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+                if (authResponseDto == null)
+                {
+                    return new ApiResult<AuthResponseDto?>(null, ApiError.ServerError);
+                }
 
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto?.AccessToken);
+                    _accessToken = authResponseDto.AccessToken;
+                    _refreshToken = authResponseDto.RefreshToken;
+                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto?.AccessToken);
+                    return new ApiResult<AuthResponseDto?>(authResponseDto, ApiError.None);
 
-            _accessToken = authResponseDto?.AccessToken;
-            _refreshToken = authResponseDto?.RefreshToken;
-            return authResponseDto;
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<AuthResponseDto?>(null, ApiError.Unauthorized);
+            }
+            return new ApiResult<AuthResponseDto?>(null, ApiError.ServerError);
         }
-        return null;
+        catch (HttpRequestException)
+        {
+            return new ApiResult<AuthResponseDto?>(null, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<AuthResponseDto?>(null, ApiError.ServerError);
+        }
+
     }
 
     private async Task<bool> RefreshTokenAsync()
