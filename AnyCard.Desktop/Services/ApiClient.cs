@@ -227,4 +227,27 @@ public class ApiClient
                 return await request();
         }
     }
+
+    public  async Task LogoutAsync()
+    {
+        if(string.IsNullOrEmpty(_refreshToken))
+        {
+            return;
+        }
+
+        try
+        {
+            await _httpClient.PostAsJsonAsync("auth/logout", new RefreshDto(_refreshToken));
+        }
+        catch (HttpRequestException)
+        {
+        }
+
+        finally
+        {
+            _accessToken = null;
+            _refreshToken = null;
+            _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
+    }
 }

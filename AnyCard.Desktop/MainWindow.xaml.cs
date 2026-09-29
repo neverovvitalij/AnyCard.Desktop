@@ -17,9 +17,14 @@ public partial class MainWindow : Window
     private async Task LoadDueCardsAsync()
     {
         var apiResult = await _apiClient.GetDueCardsAsync();
-        if(apiResult.Error != ApiError.None)
+        if(apiResult.Error == ApiError.Unauthorized)
         {
-            MessageBox.Show("Fehler beim Laden der Karten.!");
+            ShowLoginScreen();
+            return;
+        }
+        if (apiResult.Error != ApiError.None)
+        {
+            MessageBox.Show("Fehler beim Laden der Karten.");
             _dueCards = new List<CardDto>();
         }
         else
@@ -32,6 +37,11 @@ public partial class MainWindow : Window
     private async Task LoadCategoriesAsync()
     {
         var apiResult = await _apiClient.GetCategoriesAsync();
+        if(apiResult.Error == ApiError.Unauthorized)
+        {
+            ShowLoginScreen();
+            return;
+        }
         if (apiResult.Error != ApiError.None)
         {
             MessageBox.Show("Fehler beim Laden der Kategorien.");
@@ -62,8 +72,13 @@ public partial class MainWindow : Window
     }
     private async Task LoadNextCard(int cardId, UserRating userRating)
     {
-            var apiResult = await _apiClient.ReviewCardAsync(cardId, userRating);
-            if(apiResult.Error != ApiError.None)
+        var apiResult = await _apiClient.ReviewCardAsync(cardId, userRating);
+            if(apiResult.Error == ApiError.Unauthorized)
+        {
+            ShowLoginScreen();
+            return;
+        }
+            if (apiResult.Error != ApiError.None)
             {
             MessageBox.Show("Fehler beim Bewerten der Karte.");
         }
@@ -83,6 +98,7 @@ public partial class MainWindow : Window
                 LoginPanel.Visibility = Visibility.Collapsed;
                 CardPanel.Visibility = Visibility.Visible;
                 CreateNewCardButton.Visibility = Visibility.Visible;
+                LogoutButton.Visibility = Visibility.Visible;
                 await LoadDueCardsAsync();
                 break;
             case ApiError.Unauthorized:
@@ -150,6 +166,7 @@ public partial class MainWindow : Window
         var categoryName = CategoryComboBox.Text.Trim();
         var qestion = NewQuestionTextBox.Text.Trim();
         var answer = NewAnswerTextBox.Text.Trim();
+
         if (string.IsNullOrEmpty(qestion) || string.IsNullOrEmpty(answer))
         {
             MessageBox.Show("Bitte füllen Sie Frage und Antwort aus.");
@@ -160,10 +177,16 @@ public partial class MainWindow : Window
             MessageBox.Show("Bitte geben Sie einen Kategorienamen ein.");
             return;
         }
+
         var category = _categories.FirstOrDefault(c => c.Name.Equals(categoryName, StringComparison.OrdinalIgnoreCase));
         if (category == null)
         {
             var apiResult = await _apiClient.CreateCategoryAsync(categoryName);
+            if(apiResult.Error == ApiError.Unauthorized)
+            {
+                ShowLoginScreen();
+                return;
+            }
             if (apiResult.Error == ApiError.None && apiResult.Data != null)
             {
                 category = apiResult.Data;
@@ -187,6 +210,11 @@ public partial class MainWindow : Window
         }
         var cardResult = await _apiClient.CreateCardAsync(
         NewQuestionTextBox.Text, NewAnswerTextBox.Text, category.Id);
+        if(cardResult.Error == ApiError.Unauthorized)
+        {
+            ShowLoginScreen();
+            return;
+        }
 
         if (cardResult.Error != ApiError.None)
         {
@@ -204,11 +232,32 @@ public partial class MainWindow : Window
     private async void BackToCardsButton_Click(object sender, RoutedEventArgs e)
     {
         await LoadDueCardsAsync();
+        if(LoginPanel.Visibility == Visibility.Visible)
+        {
+            return;
+        }
         CreateCardPanel.Visibility = Visibility.Collapsed;
         CardPanel.Visibility = Visibility.Visible;
         CreateNewCardButton.Visibility = Visibility.Visible;
         BackToCardsButton.Visibility = Visibility.Collapsed;
         AnswerText.Visibility = Visibility.Collapsed;
+    }
+
+    private void ShowLoginScreen()
+    {
+        LoginPanel.Visibility = Visibility.Visible;
+        CardPanel.Visibility = Visibility.Collapsed;
+        CreateNewCardButton.Visibility = Visibility.Collapsed;
+        BackToCardsButton.Visibility = Visibility.Collapsed;
+        LogoutButton.Visibility = Visibility.Collapsed;
+        CreateCardPanel.Visibility = Visibility.Collapsed;
+        UsernameTextBox.Clear();
+        UserPassword.Clear();
+    }
+    private async void LogoutButton_Click(object sender, RoutedEventArgs e)
+    {
+        await _apiClient.LogoutAsync();
+        ShowLoginScreen();
     }
 }
 
