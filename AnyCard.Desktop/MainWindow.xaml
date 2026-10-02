@@ -6,110 +6,181 @@
         xmlns:local="clr-namespace:AnyCard.Desktop"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800" Background="#F3F4F6">
+
     <Grid>
+
+        <!-- ===================== LOGIN / REGISTER CARD ===================== -->
         <Border Background="White" CornerRadius="16" Padding="32"
-        Width="320" HorizontalAlignment="Center" VerticalAlignment="Center">
+                Width="320" HorizontalAlignment="Center" VerticalAlignment="Center">
             <Border.Effect>
                 <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
             </Border.Effect>
 
-            <StackPanel x:Name="LoginPanel">
-                <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold" 
-                   Foreground="#111827" HorizontalAlignment="Center"/>
-                <TextBlock Text="Melde dich an" FontSize="13" Foreground="#6B7280"
-                   HorizontalAlignment="Center" Margin="0,4,0,24"/>
+            <Grid>
 
-                <TextBox x:Name="UsernameTextBox" Height="38" Padding="10,8"
-                 BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
-                <PasswordBox x:Name="UserPassword" Height="38" Padding="10,8"
-                     BorderBrush="#D1D5DB" Margin="0,0,0,20"/>
+                <!-- LOGIN -->
+                <StackPanel x:Name="LoginPanel">
+                    <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
+                               Foreground="#111827" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Melde dich an" FontSize="13" Foreground="#6B7280"
+                               HorizontalAlignment="Center" Margin="0,4,0,24"/>
 
-                <Button x:Name="LoginButton" Content="Login" Click="LoginButton_Click"
-                Height="40" Background="#4F46E5" Foreground="White"
-                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
-            </StackPanel>
+                    <TextBox x:Name="UsernameTextBox" Height="38" Padding="10,8"
+                             BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                    <Grid Margin="0,0,0,20">
+                        <PasswordBox x:Name="UserPassword" Height="42"/>
+                        <TextBox x:Name="UserPasswordVisible" Height="42" Visibility="Collapsed"/>
+                        <Button x:Name="TogglePasswordButton" Content="👁" Click="TogglePasswordButton_Click"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"
+                                Background="Transparent" BorderThickness="0" Padding="4"/>
+                    </Grid>
+
+                    <Button x:Name="LoginButton" Content="Login" Click="LoginButton_Click"
+                            Height="40" Background="#4F46E5" Foreground="White"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
+
+                    <Button x:Name="GoToRegisterButton" Content="Noch kein Konto? Registrieren"
+                            Click="SwitchRegisterLoginButton_Click"
+                            Height="32" Margin="0,12,0,0"
+                            Background="Transparent" Foreground="#4F46E5"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+                </StackPanel>
+
+                <!-- REGISTER -->
+                <StackPanel x:Name="RegisterPanel" Visibility="Collapsed">
+                    <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
+                               Foreground="#111827" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Registrieren" FontSize="13" Foreground="#6B7280"
+                               HorizontalAlignment="Center" Margin="0,4,0,24"/>
+
+                    <TextBox x:Name="RegisterUsernameTextBox" Height="38" Padding="10,8"
+                             BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                    <Grid Margin="0,0,0,20">
+                        <PasswordBox x:Name="RegisterUserPassword" Height="42"/>
+                        <TextBox x:Name="RegisterUserPasswordVisible" Height="42" Visibility="Collapsed"/>
+                        <Button x:Name="ToggleRegisterLoginButton" Content="👁" Click="ToggleRegisterLoginButton_Click"
+                                HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"
+                                Background="Transparent" BorderThickness="0" Padding="4"/>
+                    </Grid>
+
+                    <Button x:Name="RegisterButton" Content="Registrieren" Click="RegisterButton_Click"
+                            Height="40" Background="#4F46E5" Foreground="White"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
+
+                    <Button x:Name="GoToLoginButton" Content="Bereits registriert? Anmelden"
+                            Click="SwitchRegisterLoginButton_Click"
+                            Height="32" Margin="0,12,0,0"
+                            Background="Transparent" Foreground="#4F46E5"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+                </StackPanel>
+
+            </Grid>
         </Border>
-        <Button x:Name="CreateNewCardButton" Content="+ Neue Karte" Click="CreateNewCardButton_Click"
-        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20"
-        Height="36" Padding="16,0" Background="#4F46E5" Foreground="White"
-        BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
-        Visibility="Collapsed"/>
 
+        <!-- ===================== TOP-LEVEL NAVIGATION ===================== -->
+        <StackPanel Orientation="Vertical">
+            <ComboBox x:Name="CardCategoryBox" SelectionChanged="CardCategoryBox_SelectionChanged" DisplayMemberPath="Name"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,5,0"
+                Width="115" Height="36" Padding="16,0"
+                Background="White" Foreground="#111827"
+                BorderBrush="#D1D5DB" BorderThickness="1"
+                FontWeight="SemiBold" Cursor="Hand"
+                Visibility="Collapsed"/>
+
+            <Button x:Name="CreateNewCardButton" Content="+ Neue Karte" Click="CreateNewCardButton_Click"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5"
+                Height="36" Padding="21,0" Background="#4F46E5" Foreground="White"
+                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
+                Visibility="Collapsed"/>
+            
         <Button x:Name="BackToCardsButton" Content="← Zurück" Click="BackToCardsButton_Click"
-        HorizontalAlignment="Right" VerticalAlignment="Top" Margin="20"
-        Height="36" Padding="16,0" Background="Transparent" Foreground="#4F46E5"
-        BorderThickness="1" BorderBrush="#4F46E5" FontWeight="SemiBold" Cursor="Hand"
-        Visibility="Collapsed"/>
-        
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5"
+                Height="36" Padding="16,0" Background="Transparent" Foreground="#4F46E5"
+                BorderThickness="1" BorderBrush="#4F46E5" FontWeight="SemiBold" Cursor="Hand"
+                Visibility="Collapsed"/>
+        </StackPanel>
+
+
         <Button x:Name="LogoutButton" Content="Logout" Click="LogoutButton_Click"
-        HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20"
-        Height="36" Padding="16,0" Background="Transparent" Foreground="#4F46E5"
-        BorderThickness="1" BorderBrush="#4F46E5" FontWeight="SemiBold" Cursor="Hand"
-        Visibility="Collapsed"/>
+                HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20"
+                Height="36" Padding="16,0" Background="Transparent" Foreground="#4F46E5"
+                BorderThickness="1" BorderBrush="#4F46E5" FontWeight="SemiBold" Cursor="Hand"
+                Visibility="Collapsed"/>
+
+        <!-- ===================== CARD REVIEW ===================== -->
         <Border Background="White" CornerRadius="16" Padding="32"
-        Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
-        x:Name="CardPanel" Visibility="Collapsed">
+                Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
+                x:Name="CardPanel" Visibility="Collapsed">
             <Border.Effect>
                 <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
             </Border.Effect>
 
             <StackPanel>
                 <TextBlock x:Name="QuestionText" Text="QuestionText" FontSize="18" FontWeight="SemiBold"
-                   Foreground="#111827" TextAlignment="Center" TextWrapping="Wrap"
-                   Margin="0,0,0,16"/>
+                           Foreground="#111827" TextAlignment="Center" TextWrapping="Wrap"
+                           Margin="0,0,0,16"/>
 
                 <TextBlock x:Name="AnswerText" Text="AnswerText" FontSize="15"
-                   Foreground="#4F46E5" TextAlignment="Center" TextWrapping="Wrap"
-                   Margin="0,0,0,20" Visibility="Collapsed"/>
+                           Foreground="#4F46E5" TextAlignment="Center" TextWrapping="Wrap"
+                           Margin="0,0,0,20" Visibility="Collapsed"/>
 
                 <Button x:Name="ShowAnswerButton" Content="Antwort zeigen" Click="ShowAnswerButton_Click"
-                Height="40" Background="#EEF2FF" Foreground="#4F46E5"
-                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+                        Height="40" Background="#EEF2FF" Foreground="#4F46E5"
+                        BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
 
                 <Button x:Name="HideAnswerButton" Content="Antwort verbergen" Click="HideAnswerButton_Click"
-                Height="40" Background="#EEF2FF" Foreground="#4F46E5"
-                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Visibility="Collapsed"/>
+                        Height="40" Background="#EEF2FF" Foreground="#4F46E5"
+                        BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Visibility="Collapsed"/>
 
                 <StackPanel x:Name="RatingButtonsPanel" Orientation="Horizontal"
-                    HorizontalAlignment="Center" Visibility="Collapsed" Margin="0,16,0,0">
+                            HorizontalAlignment="Center" Visibility="Collapsed" Margin="0,16,0,0">
                     <Button x:Name="AgainButton" Content="Again" Click="AgainButton_Click"
-                    Width="70" Height="36" Margin="4" Background="#FEE2E2" Foreground="#991B1B" BorderThickness="0" Cursor="Hand"/>
+                            Width="70" Height="36" Margin="4" Background="#FEE2E2" Foreground="#991B1B"
+                            BorderThickness="0" Cursor="Hand"/>
                     <Button x:Name="HardButton" Content="Hard" Click="HardButton_Click"
-                    Width="70" Height="36" Margin="4" Background="#FEF3C7" Foreground="#92400E" BorderThickness="0" Cursor="Hand"/>
+                            Width="70" Height="36" Margin="4" Background="#FEF3C7" Foreground="#92400E"
+                            BorderThickness="0" Cursor="Hand"/>
                     <Button x:Name="GoodButton" Content="Good" Click="GoodButton_Click"
-                    Width="70" Height="36" Margin="4" Background="#D1FAE5" Foreground="#065F46" BorderThickness="0" Cursor="Hand"/>
+                            Width="70" Height="36" Margin="4" Background="#D1FAE5" Foreground="#065F46"
+                            BorderThickness="0" Cursor="Hand"/>
                     <Button x:Name="EasyButton" Content="Easy" Click="EasyButton_Click"
-                    Width="70" Height="36" Margin="4" Background="#DBEAFE" Foreground="#1E40AF" BorderThickness="0" Cursor="Hand"/>
+                            Width="70" Height="36" Margin="4" Background="#DBEAFE" Foreground="#1E40AF"
+                            BorderThickness="0" Cursor="Hand"/>
                 </StackPanel>
             </StackPanel>
         </Border>
+
+        <!-- ===================== CREATE CARD ===================== -->
         <Border Background="White" CornerRadius="16" Padding="32"
-        Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
-        x:Name="CreateCardPanel" Visibility="Collapsed">
+                Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
+                x:Name="CreateCardPanel" Visibility="Collapsed">
             <Border.Effect>
                 <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
             </Border.Effect>
 
             <StackPanel>
                 <TextBlock Text="Neue Karte erstellen" FontSize="20" FontWeight="Bold"
-                   Foreground="#111827" HorizontalAlignment="Center" Margin="0,0,0,24"/>
+                           Foreground="#111827" HorizontalAlignment="Center" Margin="0,0,0,24"/>
 
                 <TextBlock Text="Frage" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
                 <TextBox x:Name="NewQuestionTextBox" Height="38" Padding="10,8"
-                 BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
+                         BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
 
                 <TextBlock Text="Antwort" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
                 <TextBox x:Name="NewAnswerTextBox" Height="38" Padding="10,8"
-                 BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
+                         BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
 
                 <TextBlock Text="Kategorie" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
                 <ComboBox x:Name="CategoryComboBox" DisplayMemberPath="Name" IsEditable="True"
-                  Height="38" Margin="0,0,0,24"/>
+                          Height="38" Margin="0,0,0,24"/>
 
                 <Button x:Name="CreateCardButton" Content="Karte erstellen" Click="CreateCardButton_Click"
-                Height="40" Background="#4F46E5" Foreground="White"
-                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+                        Height="40" Background="#4F46E5" Foreground="White"
+                        BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
             </StackPanel>
         </Border>
+
     </Grid>
 </Window>

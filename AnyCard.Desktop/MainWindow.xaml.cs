@@ -9,14 +9,24 @@ public partial class MainWindow : Window
     private List<CardDto> _dueCards = new();
     private int _currentCardIndex = 0;
     private List<CategoryDto> _categories = new();
+    private readonly CategoryDto _allCategoriesOption = new(0, "Alle");
+    private int? _selectedCategoryId = null;
     public MainWindow()
     {
         InitializeComponent();
     }
 
+    private string GetLoginPassword()
+    {
+        return _passwordVisible ? UserPasswordVisible.Text : UserPassword.Password;
+    }
+    private string GetRegisterPassword()
+    {
+        return _registerPasswordVisible ? RegisterUserPasswordVisible.Text : RegisterUserPassword.Password;
+    }
     private async Task LoadDueCardsAsync()
     {
-        var apiResult = await _apiClient.GetDueCardsAsync();
+        var apiResult = await _apiClient.GetDueCardsAsync(_selectedCategoryId);
         if(apiResult.Error == ApiError.Unauthorized)
         {
             ShowLoginScreen();
@@ -50,6 +60,8 @@ public partial class MainWindow : Window
         {
             _categories = apiResult.Data ?? new List<CategoryDto>();
             CategoryComboBox.ItemsSource = _categories;
+            CardCategoryBox.ItemsSource = new List<CategoryDto> { _allCategoriesOption }.Concat(_categories).ToList();
+            CardCategoryBox.SelectedIndex = 0;
         }
     }
     private void ShowCurrentCard()
@@ -66,8 +78,11 @@ public partial class MainWindow : Window
         else
         {
             QuestionText.Text = "Keine Karten verfügbar.";
+            AnswerText.Text = string.Empty;
+            AnswerText.Visibility = Visibility.Collapsed;
             ShowAnswerButton.Visibility = Visibility.Collapsed; 
             HideAnswerButton.Visibility = Visibility.Collapsed;
+            RatingButtonsPanel.Visibility = Visibility.Collapsed;
         }
     }
     private async Task LoadNextCard(int cardId, UserRating userRating)
@@ -88,21 +103,53 @@ public partial class MainWindow : Window
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
+        if(string.IsNullOrWhiteSpace(UsernameTextBox.Text) || string.IsNullOrWhiteSpace(GetLoginPassword()))
+        {
+            MessageBox.Show("Bitte geben Sie Benutzername und Passwort ein.");
+            return;
+        }
         string username = UsernameTextBox.Text;
-        string password = UserPassword.Password;
+        string password = GetLoginPassword();
        
         var result = await _apiClient.LoginAsync(username, password);
         switch(result.Error)
         {
             case ApiError.None:
-                LoginPanel.Visibility = Visibility.Collapsed;
-                CardPanel.Visibility = Visibility.Visible;
-                CreateNewCardButton.Visibility = Visibility.Visible;
-                LogoutButton.Visibility = Visibility.Visible;
+                ShowCardsScreen();
+                await LoadCategoriesAsync();
                 await LoadDueCardsAsync();
                 break;
             case ApiError.Unauthorized:
                 MessageBox.Show("Benutzername oder Passwort falsch.");
+                break;
+            case ApiError.NetworkUnavailable:
+                MessageBox.Show("Server nicht erreichbar.");
+                break;
+            default:
+                MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+                break;
+        }
+    }
+
+    private async void RegisterButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(RegisterUsernameTextBox.Text) || string.IsNullOrWhiteSpace(GetRegisterPassword()))
+        {
+            MessageBox.Show("Bitte geben Sie Benutzername und Passwort ein.");
+            return;
+        }
+        string username = RegisterUsernameTextBox.Text;
+        string password = GetRegisterPassword();
+
+        var result = await _apiClient.RegisterAsync(username, password);
+        switch (result.Error)
+        {
+            case ApiError.None:
+                ShowCardsScreen();
+                await LoadDueCardsAsync();
+                break;
+            case ApiError.Conflict:
+                MessageBox.Show("Dieser Benutzername ist bereits vergeben");
                 break;
             case ApiError.NetworkUnavailable:
                 MessageBox.Show("Server nicht erreichbar.");
@@ -245,19 +292,95 @@ public partial class MainWindow : Window
 
     private void ShowLoginScreen()
     {
+        RegisterPanel.Visibility = Visibility.Collapsed;
         LoginPanel.Visibility = Visibility.Visible;
         CardPanel.Visibility = Visibility.Collapsed;
         CreateNewCardButton.Visibility = Visibility.Collapsed;
         BackToCardsButton.Visibility = Visibility.Collapsed;
         LogoutButton.Visibility = Visibility.Collapsed;
         CreateCardPanel.Visibility = Visibility.Collapsed;
+        CardCategoryBox.Visibility = Visibility.Collapsed;
+        _selectedCategoryId = null;
+        RegisterUsernameTextBox.Clear();
+        RegisterUserPassword.Clear();
+        RegisterUserPasswordVisible.Clear();
+        UserPasswordVisible.Clear();
         UsernameTextBox.Clear();
         UserPassword.Clear();
+    }
+
+    private void ShowCardsScreen()
+    {
+        LoginPanel.Visibility = Visibility.Collapsed;
+        CardPanel.Visibility = Visibility.Visible;
+        CreateNewCardButton.Visibility = Visibility.Visible;
+        LogoutButton.Visibility = Visibility.Visible;
+        RegisterPanel.Visibility = Visibility.Collapsed;
+        CardCategoryBox.Visibility = Visibility.Visible;
     }
     private async void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
         await _apiClient.LogoutAsync();
         ShowLoginScreen();
+    }
+
+    private bool _passwordVisible = false;
+
+    private void TogglePasswordButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_passwordVisible)
+        {
+            UserPassword.Password = UserPasswordVisible.Text;
+            UserPasswordVisible.Visibility = Visibility.Collapsed;
+            UserPassword.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            UserPasswordVisible.Text = UserPassword.Password;
+            UserPassword.Visibility = Visibility.Collapsed;
+            UserPasswordVisible.Visibility = Visibility.Visible;
+        }
+        _passwordVisible = !_passwordVisible;
+    }
+
+    private bool _registerPasswordVisible = false;
+
+    private void ToggleRegisterLoginButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (_registerPasswordVisible)
+        {
+            RegisterUserPassword.Password = RegisterUserPasswordVisible.Text;
+            RegisterUserPasswordVisible.Visibility = Visibility.Collapsed;
+            RegisterUserPassword.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            RegisterUserPasswordVisible.Text = RegisterUserPassword.Password;
+            RegisterUserPassword.Visibility = Visibility.Collapsed;
+            RegisterUserPasswordVisible.Visibility = Visibility.Visible;
+        }
+        _registerPasswordVisible = !_registerPasswordVisible;
+    }
+
+    private void SwitchRegisterLoginButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (LoginPanel.Visibility == Visibility.Visible)
+        {
+            LoginPanel.Visibility = Visibility.Collapsed;
+            RegisterPanel.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            LoginPanel.Visibility = Visibility.Visible;
+            RegisterPanel.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private async void CardCategoryBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
+    {
+        var selected = CardCategoryBox.SelectedItem as CategoryDto;
+        _selectedCategoryId = selected != null && selected.Id != 0 ? selected.Id : null;
+        await LoadDueCardsAsync();
     }
 }
 

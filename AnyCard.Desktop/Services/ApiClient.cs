@@ -18,7 +18,41 @@ public class ApiClient
         };
     }
 
-    public async Task<ApiResult<AuthResponseDto?>> LoginAsync(string username, string password)
+    public async Task<ApiResult<AuthResponseDto>> RegisterAsync(string username, string password)
+    {
+        try
+        {
+        var response = await _httpClient.PostAsJsonAsync("auth/register", new RegisterDto(username, password));
+        if (response.IsSuccessStatusCode)
+        {
+                var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+                if (authResponseDto == null)
+                {
+                    return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
+                }
+                _accessToken = authResponseDto.AccessToken;
+                _refreshToken = authResponseDto.RefreshToken;
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto?.AccessToken);
+                return new ApiResult<AuthResponseDto>(authResponseDto, ApiError.None);
+
+            }
+        if(response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                return new ApiResult<AuthResponseDto>(null, ApiError.Conflict);
+            }
+            return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
+
+        }
+        catch (HttpRequestException)
+        {
+            return new ApiResult<AuthResponseDto>(null, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
+        }
+    } 
+    public async Task<ApiResult<AuthResponseDto>> LoginAsync(string username, string password)
     {
         try
         {
@@ -28,28 +62,28 @@ public class ApiClient
                 var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
                 if (authResponseDto == null)
                 {
-                    return new ApiResult<AuthResponseDto?>(null, ApiError.ServerError);
+                    return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
                 }
 
                     _accessToken = authResponseDto.AccessToken;
                     _refreshToken = authResponseDto.RefreshToken;
                     _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto?.AccessToken);
-                    return new ApiResult<AuthResponseDto?>(authResponseDto, ApiError.None);
+                    return new ApiResult<AuthResponseDto>(authResponseDto, ApiError.None);
 
             }
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                return new ApiResult<AuthResponseDto?>(null, ApiError.Unauthorized);
+                return new ApiResult<AuthResponseDto>(null, ApiError.Unauthorized);
             }
-            return new ApiResult<AuthResponseDto?>(null, ApiError.ServerError);
+            return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
         }
         catch (HttpRequestException)
         {
-            return new ApiResult<AuthResponseDto?>(null, ApiError.NetworkUnavailable);
+            return new ApiResult<AuthResponseDto>(null, ApiError.NetworkUnavailable);
         }
         catch (System.Text.Json.JsonException)
         {
-            return new ApiResult<AuthResponseDto?>(null, ApiError.ServerError);
+            return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
         }
 
     }
@@ -85,11 +119,12 @@ public class ApiClient
         }
     }
 
-    public async Task<ApiResult<List<CardDto>>> GetDueCardsAsync()
+    public async Task<ApiResult<List<CardDto>>> GetDueCardsAsync(int? categoryId)
     {
+        var url = categoryId.HasValue ? $"progress?categoryId={categoryId}" : "progress";
         try
         {
-        var response = await SendAsync(() => _httpClient.GetAsync("progress"));
+        var response = await SendAsync(() => _httpClient.GetAsync(url));
             if (response.IsSuccessStatusCode)
             {
                 var dueCardsRequest = await response.Content.ReadFromJsonAsync<List<CardDto>>();
