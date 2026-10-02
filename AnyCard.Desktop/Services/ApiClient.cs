@@ -18,11 +18,11 @@ public class ApiClient
         };
     }
 
-    public async Task<ApiResult<AuthResponseDto>> RegisterAsync(string username, string password)
+    public async Task<ApiResult<AuthResponseDto>> RegisterAsync(string email, string password)
     {
         try
         {
-        var response = await _httpClient.PostAsJsonAsync("auth/register", new RegisterDto(username, password));
+        var response = await _httpClient.PostAsJsonAsync("auth/register", new RegisterDto(email, password));
         if (response.IsSuccessStatusCode)
         {
                 var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
@@ -52,11 +52,11 @@ public class ApiClient
             return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
         }
     } 
-    public async Task<ApiResult<AuthResponseDto>> LoginAsync(string username, string password)
+    public async Task<ApiResult<AuthResponseDto>> LoginAsync(string email, string password)
     {
         try
         {
-            var response = await _httpClient.PostAsJsonAsync("auth/login", new LoginDto(username, password));
+            var response = await _httpClient.PostAsJsonAsync("auth/login", new LoginDto(email, password));
             if (response.IsSuccessStatusCode)
             {
                 var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();

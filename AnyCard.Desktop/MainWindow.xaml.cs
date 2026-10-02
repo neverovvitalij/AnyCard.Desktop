@@ -103,15 +103,15 @@ public partial class MainWindow : Window
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
-        if(string.IsNullOrWhiteSpace(UsernameTextBox.Text) || string.IsNullOrWhiteSpace(GetLoginPassword()))
+        if(string.IsNullOrWhiteSpace(EmailTextBox.Text) || string.IsNullOrWhiteSpace(GetLoginPassword()))
         {
-            MessageBox.Show("Bitte geben Sie Benutzername und Passwort ein.");
+            MessageBox.Show("Bitte geben Sie E-Mail und Passwort ein.");
             return;
         }
-        string username = UsernameTextBox.Text;
+        string email = EmailTextBox.Text;
         string password = GetLoginPassword();
        
-        var result = await _apiClient.LoginAsync(username, password);
+        var result = await _apiClient.LoginAsync(email, password);
         switch(result.Error)
         {
             case ApiError.None:
@@ -120,7 +120,7 @@ public partial class MainWindow : Window
                 await LoadDueCardsAsync();
                 break;
             case ApiError.Unauthorized:
-                MessageBox.Show("Benutzername oder Passwort falsch.");
+                MessageBox.Show("E-Mail oder Passwort falsch.");
                 break;
             case ApiError.NetworkUnavailable:
                 MessageBox.Show("Server nicht erreichbar.");
@@ -133,15 +133,15 @@ public partial class MainWindow : Window
 
     private async void RegisterButton_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(RegisterUsernameTextBox.Text) || string.IsNullOrWhiteSpace(GetRegisterPassword()))
+        if (string.IsNullOrWhiteSpace(RegisterEmailTextBox.Text) || string.IsNullOrWhiteSpace(GetRegisterPassword()))
         {
-            MessageBox.Show("Bitte geben Sie Benutzername und Passwort ein.");
+            MessageBox.Show("Bitte geben Sie E-Mail und Passwort ein.");
             return;
         }
-        string username = RegisterUsernameTextBox.Text;
+        string email = RegisterEmailTextBox.Text;
         string password = GetRegisterPassword();
 
-        var result = await _apiClient.RegisterAsync(username, password);
+        var result = await _apiClient.RegisterAsync(email, password);
         switch (result.Error)
         {
             case ApiError.None:
@@ -149,7 +149,7 @@ public partial class MainWindow : Window
                 await LoadDueCardsAsync();
                 break;
             case ApiError.Conflict:
-                MessageBox.Show("Dieser Benutzername ist bereits vergeben");
+                MessageBox.Show("Diese E-Mail-Adresse ist bereits vergeben");
                 break;
             case ApiError.NetworkUnavailable:
                 MessageBox.Show("Server nicht erreichbar.");
@@ -301,11 +301,11 @@ public partial class MainWindow : Window
         CreateCardPanel.Visibility = Visibility.Collapsed;
         CardCategoryBox.Visibility = Visibility.Collapsed;
         _selectedCategoryId = null;
-        RegisterUsernameTextBox.Clear();
+        RegisterEmailTextBox.Clear();
         RegisterUserPassword.Clear();
         RegisterUserPasswordVisible.Clear();
         UserPasswordVisible.Clear();
-        UsernameTextBox.Clear();
+        EmailTextBox.Clear();
         UserPassword.Clear();
     }
 
