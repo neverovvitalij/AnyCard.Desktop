@@ -12,6 +12,7 @@ public partial class MainWindow : Window
     private List<CategoryDto> _categories = new();
     private readonly CategoryDto _allCategoriesOption = new(0, "Alle");
     private int? _selectedCategoryId = null;
+    private bool _isUpdatingCategoryList;
     public MainWindow()
     {
         InitializeComponent();
@@ -25,45 +26,71 @@ public partial class MainWindow : Window
     {
         return _registerPasswordVisible ? RegisterUserPasswordVisible.Text : RegisterUserPassword.Password;
     }
-    private async Task LoadDueCardsAsync()
+    private async Task<bool> LoadDueCardsAsync()
     {
         var apiResult = await _apiClient.GetDueCardsAsync(_selectedCategoryId);
         if (apiResult.Error == ApiError.Unauthorized)
         {
             ShowLoginScreen();
-            return;
+            return false;
+        }
+        if (apiResult.Error == ApiError.NetworkUnavailable)
+        {
+            MessageBox.Show("Server nicht erreichbar.");
+            return false;
         }
         if (apiResult.Error != ApiError.None)
         {
             MessageBox.Show("Fehler beim Laden der Karten.");
-            _dueCards = new List<CardDto>();
+            return false;
         }
-        else
-        {
             _dueCards = apiResult.Data ?? new List<CardDto>();
             _currentCardIndex = 0;
-        }
         ShowCurrentCard();
+        return true;
     }
-    private async Task LoadCategoriesAsync()
+    private async Task<bool> LoadCategoriesAsync()
     {
         var apiResult = await _apiClient.GetCategoriesAsync();
         if (apiResult.Error == ApiError.Unauthorized)
         {
             ShowLoginScreen();
-            return;
+            return false;
+        }
+        if (apiResult.Error == ApiError.NetworkUnavailable)
+        {
+            MessageBox.Show("Server nicht erreichbar.");
+            return false;
         }
         if (apiResult.Error != ApiError.None)
         {
             MessageBox.Show("Fehler beim Laden der Kategorien.");
+            return false;
         }
-        else
+
+        _categories = apiResult.Data ?? new List<CategoryDto>();
+        CategoryComboBox.ItemsSource = _categories;
+
+        var filterItems = new List<CategoryDto> { _allCategoriesOption }.Concat(_categories).ToList();
+        var current = filterItems.FirstOrDefault(c => c.Id == (_selectedCategoryId ?? 0));
+
+        _isUpdatingCategoryList = true;
+        try
         {
-            _categories = apiResult.Data ?? new List<CategoryDto>();
-            CategoryComboBox.ItemsSource = _categories;
-            CardCategoryBox.ItemsSource = new List<CategoryDto> { _allCategoriesOption }.Concat(_categories).ToList();
-            CardCategoryBox.SelectedIndex = 0;
+            CardCategoryBox.ItemsSource = filterItems;
+            CardCategoryBox.SelectedItem = current ?? _allCategoriesOption;
         }
+        finally
+        {
+            _isUpdatingCategoryList = false;
+        }
+
+        if (current == null)
+        {
+            _selectedCategoryId = null;
+        }
+
+        return true;
     }
     private void ShowCurrentCard()
     {
@@ -139,14 +166,27 @@ public partial class MainWindow : Window
             MessageBox.Show("Bitte geben Sie E-Mail und Passwort ein.");
             return;
         }
-        string email = RegisterEmailTextBox.Text;
+
+        string email = RegisterEmailTextBox.Text.Trim();
         string password = GetRegisterPassword();
+
+        if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+        {
+            MessageBox.Show("Bitte geben Sie eine gültige E-Mail-Adresse ein.");
+            return;
+        }
+        if (password.Length < 8 || password.Length > 100)
+        {
+            MessageBox.Show("Das Passwort muss zwischen 8 und 100 Zeichen lang sein.");
+            return;
+        }
 
         var result = await _apiClient.RegisterAsync(email, password);
         switch (result.Error)
         {
             case ApiError.None:
                 ShowCardsScreen();
+                await LoadCategoriesAsync();
                 await LoadDueCardsAsync();
                 break;
             case ApiError.Conflict:
@@ -154,6 +194,9 @@ public partial class MainWindow : Window
                 break;
             case ApiError.NetworkUnavailable:
                 MessageBox.Show("Server nicht erreichbar.");
+                break;
+            case ApiError.InvalidInput:
+                MessageBox.Show("Bitte prüfen Sie E-Mail-Adresse und Passwort (mindestens 8 Zeichen).");
                 break;
             default:
                 MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
@@ -163,7 +206,10 @@ public partial class MainWindow : Window
 
     private async void CreateNewCardButton_Click(object sender, RoutedEventArgs e)
     {
-        await LoadCategoriesAsync();
+        if (!await LoadCategoriesAsync())
+        {
+            return;
+        }
         CardPanel.Visibility = Visibility.Collapsed;
         CreateNewCardButton.Visibility = Visibility.Collapsed;
         CreateCardPanel.Visibility = Visibility.Visible;
@@ -279,8 +325,7 @@ public partial class MainWindow : Window
     }
     private async void BackToCardsButton_Click(object sender, RoutedEventArgs e)
     {
-        await LoadDueCardsAsync();
-        if (LoginPanel.Visibility == Visibility.Visible)
+        if (!await LoadDueCardsAsync())
         {
             return;
         }
@@ -304,6 +349,8 @@ public partial class MainWindow : Window
         ForgotPasswordPanel.Visibility = Visibility.Collapsed;
         ResetPasswordPanel.Visibility = Visibility.Collapsed;
         _selectedCategoryId = null;
+        CategoryComboBox.ItemsSource = null;
+        CardCategoryBox.ItemsSource = null;
         _dueCards = new();
         _categories = new();
         _currentCardIndex = 0;
@@ -397,8 +444,12 @@ public partial class MainWindow : Window
 
     private async void CardCategoryBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
     {
-        var selected = CardCategoryBox.SelectedItem as CategoryDto;
-        _selectedCategoryId = selected != null && selected.Id != 0 ? selected.Id : null;
+        if (_isUpdatingCategoryList || CardCategoryBox.SelectedItem is not CategoryDto selected)
+        {
+            return;
+        }
+
+        _selectedCategoryId = selected.Id != 0 ? selected.Id : null;
         await LoadDueCardsAsync();
     }
 
