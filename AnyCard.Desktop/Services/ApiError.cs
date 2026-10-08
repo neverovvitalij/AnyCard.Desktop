@@ -7,5 +7,6 @@ public enum ApiError
     Unauthorized, 
     NetworkUnavailable, 
     ServerError,
-    Conflict
+    Conflict,
+    InvalidInput
 }

@@ -3,6 +3,7 @@ using AnyCard.Desktop.Models;
 using AnyCard.Desktop.Services;
 
 namespace AnyCard.Desktop;
+
 public partial class MainWindow : Window
 {
     private readonly ApiClient _apiClient = new();
@@ -27,7 +28,7 @@ public partial class MainWindow : Window
     private async Task LoadDueCardsAsync()
     {
         var apiResult = await _apiClient.GetDueCardsAsync(_selectedCategoryId);
-        if(apiResult.Error == ApiError.Unauthorized)
+        if (apiResult.Error == ApiError.Unauthorized)
         {
             ShowLoginScreen();
             return;
@@ -42,12 +43,12 @@ public partial class MainWindow : Window
             _dueCards = apiResult.Data ?? new List<CardDto>();
             _currentCardIndex = 0;
         }
-           ShowCurrentCard();
+        ShowCurrentCard();
     }
     private async Task LoadCategoriesAsync()
     {
         var apiResult = await _apiClient.GetCategoriesAsync();
-        if(apiResult.Error == ApiError.Unauthorized)
+        if (apiResult.Error == ApiError.Unauthorized)
         {
             ShowLoginScreen();
             return;
@@ -80,7 +81,7 @@ public partial class MainWindow : Window
             QuestionText.Text = "Keine Karten verfügbar.";
             AnswerText.Text = string.Empty;
             AnswerText.Visibility = Visibility.Collapsed;
-            ShowAnswerButton.Visibility = Visibility.Collapsed; 
+            ShowAnswerButton.Visibility = Visibility.Collapsed;
             HideAnswerButton.Visibility = Visibility.Collapsed;
             RatingButtonsPanel.Visibility = Visibility.Collapsed;
         }
@@ -88,31 +89,31 @@ public partial class MainWindow : Window
     private async Task LoadNextCard(int cardId, UserRating userRating)
     {
         var apiResult = await _apiClient.ReviewCardAsync(cardId, userRating);
-            if(apiResult.Error == ApiError.Unauthorized)
+        if (apiResult.Error == ApiError.Unauthorized)
         {
             ShowLoginScreen();
             return;
         }
-            if (apiResult.Error != ApiError.None)
-            {
+        if (apiResult.Error != ApiError.None)
+        {
             MessageBox.Show("Fehler beim Bewerten der Karte.");
         }
-            _currentCardIndex++;
-            ShowCurrentCard();
+        _currentCardIndex++;
+        ShowCurrentCard();
     }
 
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
-        if(string.IsNullOrWhiteSpace(EmailTextBox.Text) || string.IsNullOrWhiteSpace(GetLoginPassword()))
+        if (string.IsNullOrWhiteSpace(EmailTextBox.Text) || string.IsNullOrWhiteSpace(GetLoginPassword()))
         {
             MessageBox.Show("Bitte geben Sie E-Mail und Passwort ein.");
             return;
         }
         string email = EmailTextBox.Text;
         string password = GetLoginPassword();
-       
+
         var result = await _apiClient.LoginAsync(email, password);
-        switch(result.Error)
+        switch (result.Error)
         {
             case ApiError.None:
                 ShowCardsScreen();
@@ -229,7 +230,7 @@ public partial class MainWindow : Window
         if (category == null)
         {
             var apiResult = await _apiClient.CreateCategoryAsync(categoryName);
-            if(apiResult.Error == ApiError.Unauthorized)
+            if (apiResult.Error == ApiError.Unauthorized)
             {
                 ShowLoginScreen();
                 return;
@@ -257,7 +258,7 @@ public partial class MainWindow : Window
         }
         var cardResult = await _apiClient.CreateCardAsync(
         NewQuestionTextBox.Text, NewAnswerTextBox.Text, category.Id);
-        if(cardResult.Error == ApiError.Unauthorized)
+        if (cardResult.Error == ApiError.Unauthorized)
         {
             ShowLoginScreen();
             return;
@@ -279,7 +280,7 @@ public partial class MainWindow : Window
     private async void BackToCardsButton_Click(object sender, RoutedEventArgs e)
     {
         await LoadDueCardsAsync();
-        if(LoginPanel.Visibility == Visibility.Visible)
+        if (LoginPanel.Visibility == Visibility.Visible)
         {
             return;
         }
@@ -300,13 +301,31 @@ public partial class MainWindow : Window
         LogoutButton.Visibility = Visibility.Collapsed;
         CreateCardPanel.Visibility = Visibility.Collapsed;
         CardCategoryBox.Visibility = Visibility.Collapsed;
+        ForgotPasswordPanel.Visibility = Visibility.Collapsed;
+        ResetPasswordPanel.Visibility = Visibility.Collapsed;
         _selectedCategoryId = null;
+        _dueCards = new();
+        _categories = new();
+        _currentCardIndex = 0;
+        _passwordVisible = false;
+        _registerPasswordVisible = false;
+        QuestionText.Text = string.Empty;
+        AnswerText.Text = string.Empty;
+        AnswerText.Visibility = Visibility.Collapsed;
+        NewQuestionTextBox.Clear();
+        NewAnswerTextBox.Clear();
+        CategoryComboBox.Text = string.Empty;
         RegisterEmailTextBox.Clear();
         RegisterUserPassword.Clear();
         RegisterUserPasswordVisible.Clear();
         UserPasswordVisible.Clear();
         EmailTextBox.Clear();
         UserPassword.Clear();
+        ForgotPasswordEmailTextBox.Clear();
+        ResetPasswordEmailTextBox.Clear();
+        ResetPasswordCodeTextBox.Clear();
+        NewUserPassword.Clear();
+        RepeatNewUserPassword.Clear();
     }
 
     private void ShowCardsScreen()
@@ -381,6 +400,97 @@ public partial class MainWindow : Window
         var selected = CardCategoryBox.SelectedItem as CategoryDto;
         _selectedCategoryId = selected != null && selected.Id != 0 ? selected.Id : null;
         await LoadDueCardsAsync();
+    }
+
+    private void GoToForgotPasswordButton_Click(object sender, RoutedEventArgs e)
+    {
+        ForgotPasswordEmailTextBox.Text = EmailTextBox.Text.Trim();
+        LoginPanel.Visibility = Visibility.Collapsed;
+        ForgotPasswordPanel.Visibility = Visibility.Visible;
+    }
+
+    private async void ForgotPasswordButton_Click(object sender, RoutedEventArgs e)
+    {
+        ForgotPasswordButton.IsEnabled = false;
+        try
+        {
+            var email = ForgotPasswordEmailTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains("@"))
+            {
+                MessageBox.Show("Bitte geben Sie eine gültige E-Mail-Adresse ein.");
+                return;
+            }
+
+            var apiResult = await _apiClient.ForgotPasswordAsync(email);
+            if (apiResult.Error == ApiError.None)
+            {
+                MessageBox.Show("Wenn die E-Mail-Adresse existiert, erhalten Sie eine E-Mail mit Anweisungen zum Zurücksetzen des Passworts.");
+                ResetPasswordEmailTextBox.Text = email;
+                ForgotPasswordPanel.Visibility = Visibility.Collapsed;
+                ResetPasswordPanel.Visibility = Visibility.Visible;
+            }
+            else if (apiResult.Error == ApiError.NetworkUnavailable)
+            {
+                MessageBox.Show("Server nicht erreichbar.");
+            }
+            else if (apiResult.Error == ApiError.InvalidInput)
+            {
+                MessageBox.Show("Bitte geben Sie eine gültige E-Mail-Adresse ein.");
+            }
+            else
+            {
+                MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+            }
+        }
+        finally { ForgotPasswordButton.IsEnabled = true; }
+    }
+
+    private async void BackToLoginButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowLoginScreen();
+    }
+
+    private async void ResetPasswordButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(ResetPasswordEmailTextBox.Text) || string.IsNullOrWhiteSpace(ResetPasswordCodeTextBox.Text)
+            || string.IsNullOrWhiteSpace(NewUserPassword.Password))
+        {
+            MessageBox.Show("Bitte geben Sie Ihre E-Mail-Adresse, den Reset-Code und Ihr neues Passwort ein.");
+            return;
+        }
+        if (NewUserPassword.Password.Length < 8 || NewUserPassword.Password.Length > 100
+            || NewUserPassword.Password != RepeatNewUserPassword.Password)
+        {
+            MessageBox.Show("Das neue Passwort entspricht nicht den Anforderungen oder stimmt nicht mit dem Bestätigungspasswort überein.");
+            return;
+        }
+
+        var email = ResetPasswordEmailTextBox.Text.Trim();
+
+        var apiResult = await _apiClient.ResetPasswordAsync(email, ResetPasswordCodeTextBox.Text.Trim(), NewUserPassword.Password);
+        switch (apiResult.Error)
+        {
+            case ApiError.None:
+                MessageBox.Show("Passwort erfolgreich zurückgesetzt. Sie können sich jetzt anmelden.");
+                ShowLoginScreen();
+                break;
+            case ApiError.InvalidInput:
+                MessageBox.Show("Code ungültig oder abgelaufen. Fordern Sie bei Bedarf einen neuen Code an.");
+                break;
+            case ApiError.NetworkUnavailable:
+                MessageBox.Show("Server nicht erreichbar.");
+                break;
+            default:
+                MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+                break;
+        }
+    }
+
+    private void GoToResetPasswordButton_Click(object sender, RoutedEventArgs e)
+    {
+        ResetPasswordEmailTextBox.Text = ForgotPasswordEmailTextBox.Text.Trim();
+        ForgotPasswordPanel.Visibility = Visibility.Collapsed;
+        ResetPasswordPanel.Visibility = Visibility.Visible;
     }
 }
 

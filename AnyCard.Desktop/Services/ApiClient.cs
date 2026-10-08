@@ -14,17 +14,19 @@ public class ApiClient
     {
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri("https://localhost:7098/api/")
-        };
+            BaseAddress = new Uri("https://localhost:7098/api/"),
+            Timeout = TimeSpan.FromSeconds(30)
+        }; 
     }
 
+    private static bool IsNetworkError(Exception ex) => ex is HttpRequestException or TaskCanceledException;
     public async Task<ApiResult<AuthResponseDto>> RegisterAsync(string email, string password)
     {
         try
         {
-        var response = await _httpClient.PostAsJsonAsync("auth/register", new RegisterDto(email, password));
-        if (response.IsSuccessStatusCode)
-        {
+            var response = await _httpClient.PostAsJsonAsync("auth/register", new RegisterDto(email, password));
+            if (response.IsSuccessStatusCode)
+            {
                 var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
                 if (authResponseDto == null)
                 {
@@ -32,18 +34,22 @@ public class ApiClient
                 }
                 _accessToken = authResponseDto.AccessToken;
                 _refreshToken = authResponseDto.RefreshToken;
-                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto?.AccessToken);
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto.AccessToken);
                 return new ApiResult<AuthResponseDto>(authResponseDto, ApiError.None);
 
             }
-        if(response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
                 return new ApiResult<AuthResponseDto>(null, ApiError.Conflict);
+            }
+            if(response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                return new ApiResult<AuthResponseDto>(null, ApiError.InvalidInput);
             }
             return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
 
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (IsNetworkError(ex))
         {
             return new ApiResult<AuthResponseDto>(null, ApiError.NetworkUnavailable);
         }
@@ -51,7 +57,7 @@ public class ApiClient
         {
             return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
         }
-    } 
+    }
     public async Task<ApiResult<AuthResponseDto>> LoginAsync(string email, string password)
     {
         try
@@ -65,10 +71,10 @@ public class ApiClient
                     return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
                 }
 
-                    _accessToken = authResponseDto.AccessToken;
-                    _refreshToken = authResponseDto.RefreshToken;
-                    _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto?.AccessToken);
-                    return new ApiResult<AuthResponseDto>(authResponseDto, ApiError.None);
+                _accessToken = authResponseDto.AccessToken;
+                _refreshToken = authResponseDto.RefreshToken;
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto.AccessToken);
+                return new ApiResult<AuthResponseDto>(authResponseDto, ApiError.None);
 
             }
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
@@ -77,7 +83,7 @@ public class ApiClient
             }
             return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (IsNetworkError(ex))
         {
             return new ApiResult<AuthResponseDto>(null, ApiError.NetworkUnavailable);
         }
@@ -95,28 +101,21 @@ public class ApiClient
             return false;
         }
 
-        try
-        {
             var response = await _httpClient.PostAsJsonAsync("auth/refresh", new RefreshDto(_refreshToken));
-            if(!response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
                 return false;
             }
             var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            if(authResponseDto == null)
+            if (authResponseDto == null)
             {
                 return false;
             }
 
-            _accessToken = authResponseDto?.AccessToken;
-            _refreshToken = authResponseDto?.RefreshToken;
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto?.AccessToken);
+            _accessToken = authResponseDto.AccessToken;
+            _refreshToken = authResponseDto.RefreshToken;
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto.AccessToken);
             return true;
-        }
-        catch (HttpRequestException)
-        {
-            return false;
-        }
     }
 
     public async Task<ApiResult<List<CardDto>>> GetDueCardsAsync(int? categoryId)
@@ -124,7 +123,7 @@ public class ApiClient
         var url = categoryId.HasValue ? $"progress?categoryId={categoryId}" : "progress";
         try
         {
-        var response = await SendAsync(() => _httpClient.GetAsync(url));
+            var response = await SendAsync(() => _httpClient.GetAsync(url));
             if (response.IsSuccessStatusCode)
             {
                 var dueCardsRequest = await response.Content.ReadFromJsonAsync<List<CardDto>>();
@@ -136,9 +135,9 @@ public class ApiClient
             }
             return new ApiResult<List<CardDto>>(null, ApiError.ServerError);
         }
-        catch (HttpRequestException )
+        catch (Exception ex) when (IsNetworkError(ex))
         {
-                return new ApiResult<List<CardDto>>(null, ApiError.NetworkUnavailable);
+            return new ApiResult<List<CardDto>>(null, ApiError.NetworkUnavailable);
         }
         catch (System.Text.Json.JsonException)
         {
@@ -155,13 +154,13 @@ public class ApiClient
                 var categories = await response.Content.ReadFromJsonAsync<List<CategoryDto>>();
                 return new ApiResult<List<CategoryDto>>(categories, ApiError.None);
             }
-            if(response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 return new ApiResult<List<CategoryDto>>(null, ApiError.Unauthorized);
             }
             return new ApiResult<List<CategoryDto>>(null, ApiError.ServerError);
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (IsNetworkError(ex))
         {
             return new ApiResult<List<CategoryDto>>(null, ApiError.NetworkUnavailable);
         }
@@ -176,8 +175,8 @@ public class ApiClient
         try
         {
             var reviewCardDto = new ReviewCardDto(cardId, userRating);
-            var reviewCardRequest = await SendAsync(()=> _httpClient.PutAsJsonAsync("progress", reviewCardDto));
-            if(reviewCardRequest.IsSuccessStatusCode == true)
+            var reviewCardRequest = await SendAsync(() => _httpClient.PutAsJsonAsync("progress", reviewCardDto));
+            if (reviewCardRequest.IsSuccessStatusCode == true)
             {
                 return new ApiResult<bool>(true, ApiError.None);
             }
@@ -185,11 +184,15 @@ public class ApiClient
             {
                 return new ApiResult<bool>(false, ApiError.Unauthorized);
             }
-                return new ApiResult<bool>(false, ApiError.ServerError);
+            return new ApiResult<bool>(false, ApiError.ServerError);
         }
-        catch(HttpRequestException)
+        catch (Exception ex) when (IsNetworkError(ex))
         {
             return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<bool>(false, ApiError.ServerError);
         }
     }
 
@@ -199,20 +202,24 @@ public class ApiClient
         {
             var createCardDto = new CreateCardDto(question, answer, categoryId);
             var apiResponse = await SendAsync(() => _httpClient.PostAsJsonAsync("cards", createCardDto));
-                if(apiResponse.IsSuccessStatusCode)
-                    {
-                     return new ApiResult<bool>(true, ApiError.None);
-                    }
-                if(apiResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
-                {
-                    return new ApiResult<bool>(false, ApiError.Unauthorized);
-                }
-                return new ApiResult<bool>(false, ApiError.ServerError);
+            if (apiResponse.IsSuccessStatusCode)
+            {
+                return new ApiResult<bool>(true, ApiError.None);
+            }
+            if (apiResponse.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<bool>(false, ApiError.Unauthorized);
+            }
+            return new ApiResult<bool>(false, ApiError.ServerError);
 
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (IsNetworkError(ex))
         {
             return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<bool>(false, ApiError.ServerError);
         }
     }
 
@@ -221,8 +228,8 @@ public class ApiClient
         try
         {
             var createCategoryDto = new CreateCategoryDto(categoryName);
-            var apiResponse = await SendAsync(()=> _httpClient.PostAsJsonAsync("categories", createCategoryDto));
-            if(apiResponse.IsSuccessStatusCode)
+            var apiResponse = await SendAsync(() => _httpClient.PostAsJsonAsync("categories", createCategoryDto));
+            if (apiResponse.IsSuccessStatusCode)
             {
                 var categoryDto = await apiResponse.Content.ReadFromJsonAsync<CategoryDto>();
                 return new ApiResult<CategoryDto>(categoryDto, ApiError.None);
@@ -231,27 +238,31 @@ public class ApiClient
             {
                 return new ApiResult<CategoryDto>(null, ApiError.Unauthorized);
             }
-            if(apiResponse.StatusCode == System.Net.HttpStatusCode.Conflict)
+            if (apiResponse.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
                 return new ApiResult<CategoryDto>(null, ApiError.Conflict);
             }
             return new ApiResult<CategoryDto>(null, ApiError.ServerError);
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (IsNetworkError(ex))
         {
             return new ApiResult<CategoryDto>(null, ApiError.NetworkUnavailable);
 
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<CategoryDto>(null, ApiError.ServerError);
         }
     }
 
     private async Task<HttpResponseMessage> SendAsync(Func<Task<HttpResponseMessage>> request)
     {
         var response = await request();
-        if(response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
+        if (response.StatusCode != System.Net.HttpStatusCode.Unauthorized)
         {
-           return response;
+            return response;
         }
-        else 
+        else
         {
             var refreshResult = await RefreshTokenAsync();
             if (!refreshResult)
@@ -259,22 +270,23 @@ public class ApiClient
                 return response;
             }
             response.Dispose();
-                return await request();
+            return await request();
         }
     }
 
-    public  async Task LogoutAsync()
+    public async Task LogoutAsync()
     {
-        if(string.IsNullOrEmpty(_refreshToken))
+        if (string.IsNullOrEmpty(_refreshToken))
         {
             return;
         }
 
         try
         {
-            await _httpClient.PostAsJsonAsync("auth/logout", new RefreshDto(_refreshToken));
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            await _httpClient.PostAsJsonAsync("auth/logout", new RefreshDto(_refreshToken), cts.Token);
         }
-        catch (HttpRequestException)
+        catch (Exception ex) when (IsNetworkError(ex))
         {
         }
 
@@ -283,6 +295,53 @@ public class ApiClient
             _accessToken = null;
             _refreshToken = null;
             _httpClient.DefaultRequestHeaders.Authorization = null;
+        }
+    }
+
+    public async Task<ApiResult<bool>> ForgotPasswordAsync(string email)
+    {
+        var forgotPasswordDto = new ForgotPasswordDto(email);
+
+        try
+        {
+            var response = await _httpClient.PostAsJsonAsync("auth/forgot-password", forgotPasswordDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                return new ApiResult<bool>(true, ApiError.None);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                return new ApiResult<bool>(false, ApiError.InvalidInput);
+            }
+            return new ApiResult<bool>(false, ApiError.ServerError);
+        }
+        catch (Exception ex) when (IsNetworkError(ex))
+        {
+            return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
+
+        }
+    }
+
+    public async Task<ApiResult<bool>> ResetPasswordAsync(string email, string code, string newPassword)
+    {
+        try
+        {
+            var resetPasswordDto = new ResetPasswordDto(email, code, newPassword);
+            var apiResponse = await _httpClient.PostAsJsonAsync("auth/reset-password", resetPasswordDto);
+            if (apiResponse.IsSuccessStatusCode)
+            {
+                return new ApiResult<bool>(true, ApiError.None);
+            }
+            if (apiResponse.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                return new ApiResult<bool>(false, ApiError.InvalidInput);
+            }
+            return new ApiResult<bool>(false, ApiError.ServerError);
+        }
+        catch (Exception ex) when (IsNetworkError(ex))
+        {
+            return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
         }
     }
 }

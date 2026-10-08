@@ -5,7 +5,28 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AnyCard.Desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Background="#F3F4F6">
+        Title="MainWindow" Height="650" Width="800" Background="#F3F4F6">
+    <Window.Resources>
+        <Style x:Key="InfoIcon" TargetType="ContentControl">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Cursor" Value="Help"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="ToolTipService.InitialShowDelay" Value="200"/>
+            <Setter Property="ToolTipService.ShowDuration" Value="30000"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <Grid>
+                            <Ellipse Stroke="#9CA3AF" StrokeThickness="1.5" Fill="Transparent"/>
+                            <TextBlock Text="i" FontWeight="Bold" FontSize="11" Foreground="#6B7280"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
     <Grid>
 
@@ -45,6 +66,12 @@
                             Height="32" Margin="0,12,0,0"
                             Background="Transparent" Foreground="#4F46E5"
                             BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+
+                    <Button x:Name="GoToForgotPasswordButton" Content="Passwort vergessen?"
+                            Click="GoToForgotPasswordButton_Click"
+                            Height="32" Margin="0,12,0,0"
+                            Background="Transparent" Foreground="#4F46E5"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
                 </StackPanel>
 
                 <!-- REGISTER -->
@@ -54,9 +81,13 @@
                     <TextBlock Text="Registrieren" FontSize="13" Foreground="#6B7280"
                                HorizontalAlignment="Center" Margin="0,4,0,24"/>
 
+                    <TextBlock Text="E-Mail" FontSize="13" Foreground="#6B7280"
+                             HorizontalAlignment="Center" Margin="0,4,0,8"/>
                     <TextBox x:Name="RegisterEmailTextBox" Height="38" Padding="10,8"
                              BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
 
+                        <TextBlock Text="Passwort mindestens 8 Zeichen." FontSize="13" Foreground="#6B7280"
+                                HorizontalAlignment="Center" Margin="0,4,0,8"/>
                     <Grid Margin="0,0,0,20">
                         <PasswordBox x:Name="RegisterUserPassword" Height="42"/>
                         <TextBox x:Name="RegisterUserPasswordVisible" Height="42" Visibility="Collapsed"/>
@@ -71,6 +102,80 @@
 
                     <Button x:Name="GoToLoginButton" Content="Bereits registriert? Anmelden"
                             Click="SwitchRegisterLoginButton_Click"
+                            Height="32" Margin="0,12,0,0"
+                            Background="Transparent" Foreground="#4F46E5"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+                </StackPanel>
+
+                <!-- FORGOT PASSWORD -->
+                <StackPanel x:Name="ForgotPasswordPanel" Visibility="Collapsed">
+                    <ContentControl Style="{StaticResource InfoIcon}" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <ContentControl.ToolTip>
+                            <TextBlock Text="Wir senden einen Code an diese Adresse. Der Code ist 15 Minuten gültig. Einen neuen Code können Sie frühestens nach 1 Minute anfordern. Prüfen Sie auch den Spam-Ordner." TextWrapping="Wrap" MaxWidth="260"/>
+                        </ContentControl.ToolTip>
+                    </ContentControl>
+                    
+                    <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
+                            Foreground="#111827" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Passwort vergessen?" FontSize="13" Foreground="#6B7280"
+                            HorizontalAlignment="Center" Margin="0,4,0,24"/>
+
+                    <TextBox x:Name="ForgotPasswordEmailTextBox" Height="38" Padding="10,8"
+                            BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                    <Button x:Name="ForgotPasswordButton" Content="Code anfordern" Click="ForgotPasswordButton_Click"
+                            Height="40" Background="#4F46E5" Foreground="White"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
+
+                    <Button x:Name="GoToResetPassword" Content="Ich habe einen Reset-Code erhalten"
+                            Click="GoToResetPasswordButton_Click"
+                            Height="32" Margin="0,12,0,0"
+                            Background="Transparent" Foreground="#4F46E5"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+
+                    <Button x:Name="BackToLoginButton" Content="Zurück zum Login"
+                            Click="BackToLoginButton_Click"
+                            Height="32" Margin="0,12,0,0"
+                            Background="Transparent" Foreground="#4F46E5"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+                </StackPanel>
+
+                <!-- RESET PASSWORD -->
+                <StackPanel x:Name="ResetPasswordPanel" Visibility="Collapsed">
+                    <ContentControl Style="{StaticResource InfoIcon}" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <ContentControl.ToolTip>
+                            <TextBlock Text="Geben Sie den Code aus der E-Mail ein. Nach 5 falschen Eingaben wird der Code ungültig, dann fordern Sie einen neuen an." TextWrapping="Wrap" MaxWidth="260"/>
+                        </ContentControl.ToolTip>
+                    </ContentControl>
+                    
+                    <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
+                            Foreground="#111827" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Passwort zurücksetzen" FontSize="13" Foreground="#6B7280"
+                            HorizontalAlignment="Center" Margin="0,4,0,24"/>
+
+                    <TextBlock Text="E-Mail-Adresse" FontSize="13" Foreground="#6B7280"
+                            HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                    <TextBox x:Name="ResetPasswordEmailTextBox" Height="38" Padding="10,8"
+                            BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Reset-Code" FontSize="13" Foreground="#6B7280"
+                            HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                    <TextBox x:Name="ResetPasswordCodeTextBox" Height="38" Padding="10,8"
+                            BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                    <TextBlock Text="Neues Passwort. Mindestens 8 Zeichen." FontSize="13" Foreground="#6B7280"
+                            HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                    <PasswordBox x:Name="NewUserPassword" Height="42" Margin="0,0,0,12"/>
+                    <TextBlock Text="Passwort wiederholen" FontSize="13" Foreground="#6B7280"
+                            HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                    <PasswordBox x:Name="RepeatNewUserPassword" Height="42" Margin="0,0,0,20"/>
+
+                    <Button x:Name="ResetPasswordButton" Content="Passwort zurücksetzen" Click="ResetPasswordButton_Click"
+                            Height="40" Background="#4F46E5" Foreground="White"
+                            BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
+
+                    <Button x:Name="BackToLoginButton2" Content="Zurück zum Login"
+                            Click="BackToLoginButton_Click"
                             Height="32" Margin="0,12,0,0"
                             Background="Transparent" Foreground="#4F46E5"
                             BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
@@ -94,8 +199,8 @@
                 Height="36" Padding="21,0" Background="#4F46E5" Foreground="White"
                 BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
                 Visibility="Collapsed"/>
-            
-        <Button x:Name="BackToCardsButton" Content="← Zurück" Click="BackToCardsButton_Click"
+
+            <Button x:Name="BackToCardsButton" Content="← Zurück" Click="BackToCardsButton_Click"
                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5"
                 Height="36" Padding="16,0" Background="Transparent" Foreground="#4F46E5"
                 BorderThickness="1" BorderBrush="#4F46E5" FontWeight="SemiBold" Cursor="Hand"
@@ -137,17 +242,23 @@
                 <StackPanel x:Name="RatingButtonsPanel" Orientation="Horizontal"
                             HorizontalAlignment="Center" Visibility="Collapsed" Margin="0,16,0,0">
                     <Button x:Name="AgainButton" Content="Again" Click="AgainButton_Click"
-                            Width="70" Height="36" Margin="4" Background="#FEE2E2" Foreground="#991B1B"
+                            Width="62" Height="36" Margin="3" Background="#FEE2E2" Foreground="#991B1B"
                             BorderThickness="0" Cursor="Hand"/>
                     <Button x:Name="HardButton" Content="Hard" Click="HardButton_Click"
-                            Width="70" Height="36" Margin="4" Background="#FEF3C7" Foreground="#92400E"
+                            Width="62" Height="36" Margin="3" Background="#FEF3C7" Foreground="#92400E"
                             BorderThickness="0" Cursor="Hand"/>
                     <Button x:Name="GoodButton" Content="Good" Click="GoodButton_Click"
-                            Width="70" Height="36" Margin="4" Background="#D1FAE5" Foreground="#065F46"
+                            Width="62" Height="36" Margin="3" Background="#D1FAE5" Foreground="#065F46"
                             BorderThickness="0" Cursor="Hand"/>
                     <Button x:Name="EasyButton" Content="Easy" Click="EasyButton_Click"
-                            Width="70" Height="36" Margin="4" Background="#DBEAFE" Foreground="#1E40AF"
+                            Width="62" Height="36" Margin="3" Background="#DBEAFE" Foreground="#1E40AF"
                             BorderThickness="0" Cursor="Hand"/>
+                    
+                <ContentControl Style="{StaticResource InfoIcon}">
+                    <ContentControl.ToolTip>
+                        <TextBlock Text="Again: kommt bald wieder. Hard: ca. 2 Stunden. Good: ca. 2 Tage. Easy: ca. 6 Tage. Mit jeder weiteren erfolgreichen Wiederholung verdoppelt sich der Abstand. Again setzt ihn zurück." TextWrapping="Wrap" MaxWidth="260"/>
+                    </ContentControl.ToolTip>
+                </ContentControl>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -172,7 +283,14 @@
                 <TextBox x:Name="NewAnswerTextBox" Height="38" Padding="10,8"
                          BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
 
-                <TextBlock Text="Kategorie" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
+                <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Kategorie" FontSize="12" Foreground="#374151" Margin="0,0,4,4"/>
+                    <ContentControl Style="{StaticResource InfoIcon}" Margin="0,0,0,4">
+                    <ContentControl.ToolTip>
+                        <TextBlock Text="Wählen Sie eine Kategorie aus der Liste oder tippen Sie einen neuen Namen" TextWrapping="Wrap" MaxWidth="260"/>
+                    </ContentControl.ToolTip>
+                </ContentControl>
+                </StackPanel>
                 <ComboBox x:Name="CategoryComboBox" DisplayMemberPath="Name" IsEditable="True"
                           Height="38" Margin="0,0,0,24"/>
 
