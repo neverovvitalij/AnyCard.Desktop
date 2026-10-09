@@ -16,7 +16,7 @@ public class ApiClient
         {
             BaseAddress = new Uri("https://localhost:7098/api/"),
             Timeout = TimeSpan.FromSeconds(30)
-        }; 
+        };
     }
 
     private static bool IsNetworkError(Exception ex) => ex is HttpRequestException or TaskCanceledException;
@@ -42,9 +42,13 @@ public class ApiClient
             {
                 return new ApiResult<AuthResponseDto>(null, ApiError.Conflict);
             }
-            if(response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
                 return new ApiResult<AuthResponseDto>(null, ApiError.InvalidInput);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                return new ApiResult<AuthResponseDto>(null, ApiError.TooManyRequests);
             }
             return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
 
@@ -81,6 +85,10 @@ public class ApiClient
             {
                 return new ApiResult<AuthResponseDto>(null, ApiError.Unauthorized);
             }
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                return new ApiResult<AuthResponseDto>(null, ApiError.TooManyRequests);
+            }
             return new ApiResult<AuthResponseDto>(null, ApiError.ServerError);
         }
         catch (Exception ex) when (IsNetworkError(ex))
@@ -101,21 +109,21 @@ public class ApiClient
             return false;
         }
 
-            var response = await _httpClient.PostAsJsonAsync("auth/refresh", new RefreshDto(_refreshToken));
-            if (!response.IsSuccessStatusCode)
-            {
-                return false;
-            }
-            var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
-            if (authResponseDto == null)
-            {
-                return false;
-            }
+        var response = await _httpClient.PostAsJsonAsync("auth/refresh", new RefreshDto(_refreshToken));
+        if (!response.IsSuccessStatusCode)
+        {
+            return false;
+        }
+        var authResponseDto = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+        if (authResponseDto == null)
+        {
+            return false;
+        }
 
-            _accessToken = authResponseDto.AccessToken;
-            _refreshToken = authResponseDto.RefreshToken;
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto.AccessToken);
-            return true;
+        _accessToken = authResponseDto.AccessToken;
+        _refreshToken = authResponseDto.RefreshToken;
+        _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authResponseDto.AccessToken);
+        return true;
     }
 
     public async Task<ApiResult<List<CardDto>>> GetDueCardsAsync(int? categoryId)
@@ -314,6 +322,10 @@ public class ApiClient
             {
                 return new ApiResult<bool>(false, ApiError.InvalidInput);
             }
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                return new ApiResult<bool>(false, ApiError.TooManyRequests);
+            }
             return new ApiResult<bool>(false, ApiError.ServerError);
         }
         catch (Exception ex) when (IsNetworkError(ex))
@@ -336,6 +348,10 @@ public class ApiClient
             if (apiResponse.StatusCode == System.Net.HttpStatusCode.BadRequest)
             {
                 return new ApiResult<bool>(false, ApiError.InvalidInput);
+            }
+            if (apiResponse.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+            {
+                return new ApiResult<bool>(false, ApiError.TooManyRequests);
             }
             return new ApiResult<bool>(false, ApiError.ServerError);
         }

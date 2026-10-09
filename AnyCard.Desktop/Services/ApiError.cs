@@ -8,5 +8,6 @@ public enum ApiError
     NetworkUnavailable, 
     ServerError,
     Conflict,
-    InvalidInput
+    InvalidInput,
+    TooManyRequests
 }

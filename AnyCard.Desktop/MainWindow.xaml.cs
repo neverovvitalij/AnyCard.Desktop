@@ -44,8 +44,8 @@ public partial class MainWindow : Window
             MessageBox.Show("Fehler beim Laden der Karten.");
             return false;
         }
-            _dueCards = apiResult.Data ?? new List<CardDto>();
-            _currentCardIndex = 0;
+        _dueCards = apiResult.Data ?? new List<CardDto>();
+        _currentCardIndex = 0;
         ShowCurrentCard();
         return true;
     }
@@ -153,6 +153,9 @@ public partial class MainWindow : Window
             case ApiError.NetworkUnavailable:
                 MessageBox.Show("Server nicht erreichbar.");
                 break;
+            case ApiError.TooManyRequests:
+                MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
+                break;
             default:
                 MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
                 break;
@@ -197,6 +200,9 @@ public partial class MainWindow : Window
                 break;
             case ApiError.InvalidInput:
                 MessageBox.Show("Bitte prüfen Sie E-Mail-Adresse und Passwort (mindestens 8 Zeichen).");
+                break;
+            case ApiError.TooManyRequests:
+                MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
                 break;
             default:
                 MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
@@ -338,6 +344,10 @@ public partial class MainWindow : Window
 
     private void ShowLoginScreen()
     {
+        UserPassword.Visibility = Visibility.Visible;
+        UserPasswordVisible.Visibility = Visibility.Collapsed;
+        RegisterUserPassword.Visibility = Visibility.Visible;
+        RegisterUserPasswordVisible.Visibility = Visibility.Collapsed;
         RegisterPanel.Visibility = Visibility.Collapsed;
         LoginPanel.Visibility = Visibility.Visible;
         CardPanel.Visibility = Visibility.Collapsed;
@@ -488,6 +498,10 @@ public partial class MainWindow : Window
             {
                 MessageBox.Show("Bitte geben Sie eine gültige E-Mail-Adresse ein.");
             }
+            else if (apiResult.Error == ApiError.TooManyRequests)
+            {
+                MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
+            }
             else
             {
                 MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
@@ -496,7 +510,7 @@ public partial class MainWindow : Window
         finally { ForgotPasswordButton.IsEnabled = true; }
     }
 
-    private async void BackToLoginButton_Click(object sender, RoutedEventArgs e)
+    private void BackToLoginButton_Click(object sender, RoutedEventArgs e)
     {
         ShowLoginScreen();
     }
@@ -530,6 +544,9 @@ public partial class MainWindow : Window
                 break;
             case ApiError.NetworkUnavailable:
                 MessageBox.Show("Server nicht erreichbar.");
+                break;
+            case ApiError.TooManyRequests:
+                MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
                 break;
             default:
                 MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
