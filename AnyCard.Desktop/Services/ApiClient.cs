@@ -10,11 +10,17 @@ public class ApiClient
     private readonly HttpClient _httpClient;
     private string? _accessToken;
     private string? _refreshToken;
+
+#if DEBUG
+    private const string BaseUrl = "https://localhost:7098/api/";
+#else
+    private const string BaseUrl = "https://api.any-card.de/api/";
+#endif
     public ApiClient()
     {
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri("https://localhost:7098/api/"),
+            BaseAddress = new Uri(BaseUrl),
             Timeout = TimeSpan.FromSeconds(30)
         };
     }
