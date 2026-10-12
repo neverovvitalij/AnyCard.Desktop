@@ -139,26 +139,34 @@ public partial class MainWindow : Window
         string email = EmailTextBox.Text;
         string password = GetLoginPassword();
 
-        var result = await _apiClient.LoginAsync(email, password);
-        switch (result.Error)
+        LoginButton.IsEnabled = false;
+        try
         {
-            case ApiError.None:
-                ShowCardsScreen();
-                await LoadCategoriesAsync();
-                await LoadDueCardsAsync();
-                break;
-            case ApiError.Unauthorized:
-                MessageBox.Show("E-Mail oder Passwort falsch.");
-                break;
-            case ApiError.NetworkUnavailable:
-                MessageBox.Show("Server nicht erreichbar.");
-                break;
-            case ApiError.TooManyRequests:
-                MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
-                break;
-            default:
-                MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
-                break;
+            var result = await _apiClient.LoginAsync(email, password);
+            switch (result.Error)
+            {
+                case ApiError.None:
+                    ShowCardsScreen();
+                    await LoadCategoriesAsync();
+                    await LoadDueCardsAsync();
+                    break;
+                case ApiError.Unauthorized:
+                    MessageBox.Show("E-Mail oder Passwort falsch.");
+                    break;
+                case ApiError.NetworkUnavailable:
+                    MessageBox.Show("Server nicht erreichbar.");
+                    break;
+                case ApiError.TooManyRequests:
+                    MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
+                    break;
+                default:
+                    MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+                    break;
+            }
+        }
+        finally
+        {
+            LoginButton.IsEnabled = true;
         }
     }
 
@@ -184,29 +192,37 @@ public partial class MainWindow : Window
             return;
         }
 
-        var result = await _apiClient.RegisterAsync(email, password);
-        switch (result.Error)
+        RegisterButton.IsEnabled = false;
+        try
         {
-            case ApiError.None:
-                ShowCardsScreen();
-                await LoadCategoriesAsync();
-                await LoadDueCardsAsync();
-                break;
-            case ApiError.Conflict:
-                MessageBox.Show("Diese E-Mail-Adresse ist bereits vergeben");
-                break;
-            case ApiError.NetworkUnavailable:
-                MessageBox.Show("Server nicht erreichbar.");
-                break;
-            case ApiError.InvalidInput:
-                MessageBox.Show("Bitte prüfen Sie E-Mail-Adresse und Passwort (mindestens 8 Zeichen).");
-                break;
-            case ApiError.TooManyRequests:
-                MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
-                break;
-            default:
-                MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
-                break;
+            var result = await _apiClient.RegisterAsync(email, password);
+            switch (result.Error)
+            {
+                case ApiError.None:
+                    ShowCardsScreen();
+                    await LoadCategoriesAsync();
+                    await LoadDueCardsAsync();
+                    break;
+                case ApiError.Conflict:
+                    MessageBox.Show("Diese E-Mail-Adresse ist bereits vergeben");
+                    break;
+                case ApiError.NetworkUnavailable:
+                    MessageBox.Show("Server nicht erreichbar.");
+                    break;
+                case ApiError.InvalidInput:
+                    MessageBox.Show("Bitte prüfen Sie E-Mail-Adresse und Passwort (mindestens 8 Zeichen).");
+                    break;
+                case ApiError.TooManyRequests:
+                    MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
+                    break;
+                default:
+                    MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+                    break;
+            }
+        }
+        finally
+        {
+            RegisterButton.IsEnabled = true;
         }
     }
 
@@ -532,25 +548,33 @@ public partial class MainWindow : Window
 
         var email = ResetPasswordEmailTextBox.Text.Trim();
 
-        var apiResult = await _apiClient.ResetPasswordAsync(email, ResetPasswordCodeTextBox.Text.Trim(), NewUserPassword.Password);
-        switch (apiResult.Error)
+        ResetPasswordButton.IsEnabled = false;
+        try
         {
-            case ApiError.None:
-                MessageBox.Show("Passwort erfolgreich zurückgesetzt. Sie können sich jetzt anmelden.");
-                ShowLoginScreen();
-                break;
-            case ApiError.InvalidInput:
-                MessageBox.Show("Code ungültig oder abgelaufen. Fordern Sie bei Bedarf einen neuen Code an.");
-                break;
-            case ApiError.NetworkUnavailable:
-                MessageBox.Show("Server nicht erreichbar.");
-                break;
-            case ApiError.TooManyRequests:
-                MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
-                break;
-            default:
-                MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
-                break;
+            var apiResult = await _apiClient.ResetPasswordAsync(email, ResetPasswordCodeTextBox.Text.Trim(), NewUserPassword.Password);
+            switch (apiResult.Error)
+            {
+                case ApiError.None:
+                    MessageBox.Show("Passwort erfolgreich zurückgesetzt. Sie können sich jetzt anmelden.");
+                    ShowLoginScreen();
+                    break;
+                case ApiError.InvalidInput:
+                    MessageBox.Show("Code ungültig oder abgelaufen. Fordern Sie bei Bedarf einen neuen Code an.");
+                    break;
+                case ApiError.NetworkUnavailable:
+                    MessageBox.Show("Server nicht erreichbar.");
+                    break;
+                case ApiError.TooManyRequests:
+                    MessageBox.Show("Zu viele Versuche. Bitte warten Sie einen Moment.");
+                    break;
+                default:
+                    MessageBox.Show("Ein Fehler ist aufgetreten. Bitte versuchen Sie es später erneut.");
+                    break;
+            }
+        }
+        finally
+        {
+            ResetPasswordButton.IsEnabled = true;
         }
     }
 
