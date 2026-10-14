@@ -184,6 +184,32 @@ public class ApiClient
         }
     }
 
+    public async Task<ApiResult<List<CardDto>>> GetAllCardsAsync()
+    {
+        try
+        {
+            var response = await SendAsync(() => _httpClient.GetAsync("cards"));
+            if (response.IsSuccessStatusCode)
+            {
+                var allCardsRequest = await response.Content.ReadFromJsonAsync<List<CardDto>>();
+                return new ApiResult<List<CardDto>>(allCardsRequest, ApiError.None);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<List<CardDto>>(null, ApiError.Unauthorized);
+            }
+            return new ApiResult<List<CardDto>>(null, ApiError.ServerError);
+        }
+        catch (Exception ex) when (IsNetworkError(ex))
+        {
+            return new ApiResult<List<CardDto>>(null, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<List<CardDto>>(null, ApiError.ServerError);
+        }
+    }
+
     public async Task<ApiResult<bool>> ReviewCardAsync(int cardId, UserRating userRating)
     {
         try
@@ -364,6 +390,67 @@ public class ApiClient
         catch (Exception ex) when (IsNetworkError(ex))
         {
             return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
+        }
+    }
+
+    public async Task<ApiResult<ProgressSummaryDto>> GetProgressSummaryAsync()
+    {
+        try
+        {
+            var response = await SendAsync(() => _httpClient.GetAsync("progress/summary"));
+            if (response.IsSuccessStatusCode)
+            {
+                var summary = await response.Content.ReadFromJsonAsync<ProgressSummaryDto>();
+                return new ApiResult<ProgressSummaryDto>(summary, ApiError.None);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<ProgressSummaryDto>(null, ApiError.Unauthorized);
+            }
+            return new ApiResult<ProgressSummaryDto>(null, ApiError.ServerError);
+        }
+        catch (Exception ex) when (IsNetworkError(ex))
+        {
+            return new ApiResult<ProgressSummaryDto>(null, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<ProgressSummaryDto>(null, ApiError.ServerError);
+        }
+    }
+
+    public async Task<ApiResult<PagedResult<CardOverviewDto>>> GetCardsOverviewAsync(int? categoryId, UserRating? userRating, int pageNumber)
+    {
+        var url = $"progress/overview?pageNumber={pageNumber}";
+        if (categoryId.HasValue)
+        {
+            url += $"&categoryId={categoryId}";
+        }
+        if (userRating.HasValue)
+        {
+            url += $"&userRating={userRating}";
+        }
+        try
+        {
+            var response = await SendAsync(() => _httpClient.GetAsync(url));
+            if (response.IsSuccessStatusCode)
+            {
+                var overview = await response.Content.ReadFromJsonAsync<PagedResult<CardOverviewDto>>();
+                return new ApiResult<PagedResult<CardOverviewDto>>(overview, ApiError.None);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<PagedResult<CardOverviewDto>>(null, ApiError.Unauthorized);
+            }
+            return new ApiResult<PagedResult<CardOverviewDto>>(null, ApiError.ServerError);
+        }
+        catch (Exception ex) when (IsNetworkError(ex))
+        {
+            return new ApiResult<PagedResult<CardOverviewDto>>(null, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<PagedResult<CardOverviewDto>>(null, ApiError.ServerError);
         }
     }
 }
