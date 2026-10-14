@@ -10,7 +10,7 @@ public partial class MainWindow : Window
     private List<CardDto> _dueCards = new();
     private int _currentCardIndex = 0;
     private List<CategoryDto> _categories = new();
-    private readonly CategoryDto _allCategoriesOption = new(0, "Alle");
+    private readonly CategoryDto _allCategoriesOption = new(0, "Kategorien");
     private int? _selectedCategoryId = null;
     private bool _isUpdatingCategoryList;
     public MainWindow()
@@ -102,6 +102,7 @@ public partial class MainWindow : Window
             ShowAnswerButton.Visibility = Visibility.Visible;
             HideAnswerButton.Visibility = Visibility.Collapsed;
             RatingButtonsPanel.Visibility = Visibility.Collapsed;
+            CardCategoryBox.Visibility = Visibility.Visible;
         }
         else
         {
@@ -232,10 +233,10 @@ public partial class MainWindow : Window
         {
             return;
         }
-        CardPanel.Visibility = Visibility.Collapsed;
-        CreateNewCardButton.Visibility = Visibility.Collapsed;
+        HideAllScreens();
         CreateCardPanel.Visibility = Visibility.Visible;
         BackToCardsButton.Visibility = Visibility.Visible;
+        ShowAllCardsButton.Visibility = Visibility.Visible;
     }
 
     private void ShowAnswerButton_Click(object sender, RoutedEventArgs e)
@@ -351,29 +352,20 @@ public partial class MainWindow : Window
         {
             return;
         }
-        CreateCardPanel.Visibility = Visibility.Collapsed;
+        HideAllScreens();
         CardPanel.Visibility = Visibility.Visible;
         CreateNewCardButton.Visibility = Visibility.Visible;
-        BackToCardsButton.Visibility = Visibility.Collapsed;
-        AnswerText.Visibility = Visibility.Collapsed;
+        CardCategoryBox.Visibility = Visibility.Visible;
+        ShowAllCardsButton.Visibility = Visibility.Visible;
     }
 
     private void ShowLoginScreen()
     {
+        HideAllScreens();
         UserPassword.Visibility = Visibility.Visible;
-        UserPasswordVisible.Visibility = Visibility.Collapsed;
         RegisterUserPassword.Visibility = Visibility.Visible;
-        RegisterUserPasswordVisible.Visibility = Visibility.Collapsed;
-        RegisterPanel.Visibility = Visibility.Collapsed;
         LoginPanel.Visibility = Visibility.Visible;
-        CardPanel.Visibility = Visibility.Collapsed;
-        CreateNewCardButton.Visibility = Visibility.Collapsed;
-        BackToCardsButton.Visibility = Visibility.Collapsed;
         LogoutButton.Visibility = Visibility.Collapsed;
-        CreateCardPanel.Visibility = Visibility.Collapsed;
-        CardCategoryBox.Visibility = Visibility.Collapsed;
-        ForgotPasswordPanel.Visibility = Visibility.Collapsed;
-        ResetPasswordPanel.Visibility = Visibility.Collapsed;
         _selectedCategoryId = null;
         CategoryComboBox.ItemsSource = null;
         CardCategoryBox.ItemsSource = null;
@@ -384,7 +376,6 @@ public partial class MainWindow : Window
         _registerPasswordVisible = false;
         QuestionText.Text = string.Empty;
         AnswerText.Text = string.Empty;
-        AnswerText.Visibility = Visibility.Collapsed;
         NewQuestionTextBox.Clear();
         NewAnswerTextBox.Clear();
         CategoryComboBox.Text = string.Empty;
@@ -403,12 +394,12 @@ public partial class MainWindow : Window
 
     private void ShowCardsScreen()
     {
-        LoginPanel.Visibility = Visibility.Collapsed;
+        HideAllScreens();
         CardPanel.Visibility = Visibility.Visible;
         CreateNewCardButton.Visibility = Visibility.Visible;
         LogoutButton.Visibility = Visibility.Visible;
-        RegisterPanel.Visibility = Visibility.Collapsed;
         CardCategoryBox.Visibility = Visibility.Visible;
+        ShowAllCardsButton.Visibility = Visibility.Visible;
     }
     private async void LogoutButton_Click(object sender, RoutedEventArgs e)
     {
@@ -583,6 +574,25 @@ public partial class MainWindow : Window
         ResetPasswordEmailTextBox.Text = ForgotPasswordEmailTextBox.Text.Trim();
         ForgotPasswordPanel.Visibility = Visibility.Collapsed;
         ResetPasswordPanel.Visibility = Visibility.Visible;
+    }
+
+    private async void ShowAllCardsButton_Click(object sender, RoutedEventArgs e)
+    {
+
+    }
+
+    private void HideAllScreens()
+    {
+        LoginPanel.Visibility = Visibility.Collapsed;
+        RegisterPanel.Visibility = Visibility.Collapsed;
+        ForgotPasswordPanel.Visibility = Visibility.Collapsed;
+        ResetPasswordPanel.Visibility = Visibility.Collapsed;
+        CardCategoryBox.Visibility = Visibility.Collapsed;
+        ShowAllCardsButton.Visibility = Visibility.Collapsed;
+        CreateNewCardButton.Visibility = Visibility.Collapsed;
+        BackToCardsButton.Visibility = Visibility.Collapsed;
+        CardPanel.Visibility = Visibility.Collapsed;
+        CreateCardPanel.Visibility = Visibility.Collapsed;
     }
 }
 

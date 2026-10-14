@@ -46,12 +46,12 @@
                     <TextBlock Text="Melde dich an" FontSize="13" Foreground="#6B7280"
                                HorizontalAlignment="Center" Margin="0,4,0,24"/>
 
-                    <TextBox x:Name="EmailTextBox" Height="38" Padding="10,8"
+                    <TextBox x:Name="EmailTextBox" Height="38" Padding="10"
                              BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
 
                     <Grid Margin="0,0,0,20">
-                        <PasswordBox x:Name="UserPassword" Height="42"/>
-                        <TextBox x:Name="UserPasswordVisible" Height="42" Visibility="Collapsed"/>
+                        <PasswordBox x:Name="UserPassword" Height="42" Padding="10"/>
+                        <TextBox x:Name="UserPasswordVisible" Height="42" Padding="10" Visibility="Collapsed"/>
                         <Button x:Name="TogglePasswordButton" Content="👁" Click="TogglePasswordButton_Click"
                                 HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"
                                 Background="Transparent" BorderThickness="0" Padding="4"/>
@@ -83,14 +83,14 @@
 
                     <TextBlock Text="E-Mail" FontSize="13" Foreground="#6B7280"
                              HorizontalAlignment="Center" Margin="0,4,0,8"/>
-                    <TextBox x:Name="RegisterEmailTextBox" Height="38" Padding="10,8"
+                    <TextBox x:Name="RegisterEmailTextBox" Height="38" Padding="10"
                              BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
 
-                        <TextBlock Text="Passwort mindestens 8 Zeichen." FontSize="13" Foreground="#6B7280"
+                    <TextBlock Text="Passwort mindestens 8 Zeichen." FontSize="13" Foreground="#6B7280"
                                 HorizontalAlignment="Center" Margin="0,4,0,8"/>
                     <Grid Margin="0,0,0,20">
-                        <PasswordBox x:Name="RegisterUserPassword" Height="42"/>
-                        <TextBox x:Name="RegisterUserPasswordVisible" Height="42" Visibility="Collapsed"/>
+                        <PasswordBox x:Name="RegisterUserPassword" Height="42" Padding="10"/>
+                        <TextBox x:Name="RegisterUserPasswordVisible" Height="42" Padding="10" Visibility="Collapsed"/>
                         <Button x:Name="ToggleRegisterLoginButton" Content="👁" Click="ToggleRegisterLoginButton_Click"
                                 HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"
                                 Background="Transparent" BorderThickness="0" Padding="4"/>
@@ -114,13 +114,13 @@
                             <TextBlock Text="Wir senden einen Code an diese Adresse. Der Code ist 15 Minuten gültig. Einen neuen Code können Sie frühestens nach 1 Minute anfordern. Prüfen Sie auch den Spam-Ordner." TextWrapping="Wrap" MaxWidth="260"/>
                         </ContentControl.ToolTip>
                     </ContentControl>
-                    
+
                     <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
                             Foreground="#111827" HorizontalAlignment="Center"/>
                     <TextBlock Text="Passwort vergessen?" FontSize="13" Foreground="#6B7280"
                             HorizontalAlignment="Center" Margin="0,4,0,24"/>
 
-                    <TextBox x:Name="ForgotPasswordEmailTextBox" Height="38" Padding="10,8"
+                    <TextBox x:Name="ForgotPasswordEmailTextBox" Height="38" Padding="10"
                             BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
 
                     <Button x:Name="ForgotPasswordButton" Content="Code anfordern" Click="ForgotPasswordButton_Click"
@@ -147,7 +147,7 @@
                             <TextBlock Text="Geben Sie den Code aus der E-Mail ein. Nach 5 falschen Eingaben wird der Code ungültig, dann fordern Sie einen neuen an." TextWrapping="Wrap" MaxWidth="260"/>
                         </ContentControl.ToolTip>
                     </ContentControl>
-                    
+
                     <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
                             Foreground="#111827" HorizontalAlignment="Center"/>
                     <TextBlock Text="Passwort zurücksetzen" FontSize="13" Foreground="#6B7280"
@@ -155,20 +155,20 @@
 
                     <TextBlock Text="E-Mail-Adresse" FontSize="13" Foreground="#6B7280"
                             HorizontalAlignment="Center" Margin="0,4,0,8"/>
-                    <TextBox x:Name="ResetPasswordEmailTextBox" Height="38" Padding="10,8"
+                    <TextBox x:Name="ResetPasswordEmailTextBox" Height="38" Padding="10"
                             BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
 
                     <TextBlock Text="Reset-Code" FontSize="13" Foreground="#6B7280"
                             HorizontalAlignment="Center" Margin="0,4,0,8"/>
-                    <TextBox x:Name="ResetPasswordCodeTextBox" Height="38" Padding="10,8"
+                    <TextBox x:Name="ResetPasswordCodeTextBox" Height="38" Padding="10"
                             BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
 
                     <TextBlock Text="Neues Passwort. Mindestens 8 Zeichen." FontSize="13" Foreground="#6B7280"
                             HorizontalAlignment="Center" Margin="0,4,0,8"/>
-                    <PasswordBox x:Name="NewUserPassword" Height="42" Margin="0,0,0,12"/>
+                    <PasswordBox x:Name="NewUserPassword" Height="42" Margin="0,0,0,12" Padding="10"/>
                     <TextBlock Text="Passwort wiederholen" FontSize="13" Foreground="#6B7280"
                             HorizontalAlignment="Center" Margin="0,4,0,8"/>
-                    <PasswordBox x:Name="RepeatNewUserPassword" Height="42" Margin="0,0,0,20"/>
+                    <PasswordBox x:Name="RepeatNewUserPassword" Height="42" Margin="0,0,0,20" Padding="10"/>
 
                     <Button x:Name="ResetPasswordButton" Content="Passwort zurücksetzen" Click="ResetPasswordButton_Click"
                             Height="40" Background="#4F46E5" Foreground="White"
@@ -187,21 +187,27 @@
         <!-- ===================== TOP-LEVEL NAVIGATION ===================== -->
         <StackPanel Orientation="Vertical">
             <ComboBox x:Name="CardCategoryBox" SelectionChanged="CardCategoryBox_SelectionChanged" DisplayMemberPath="Name"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,5,0"
-                Width="115" Height="36" Padding="16,0"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
+                Width="103" Height="36" Padding="10"
                 Background="White" Foreground="#111827"
                 BorderBrush="#D1D5DB" BorderThickness="1"
                 FontWeight="SemiBold" Cursor="Hand"
                 Visibility="Collapsed"/>
 
-            <Button x:Name="CreateNewCardButton" Content="+ Neue Karte" Click="CreateNewCardButton_Click"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5"
+            <Button x:Name="ShowAllCardsButton" Content="Alle Karten" Click="ShowAllCardsButton_Click"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
+                Height="36" Padding="21,0" Background="#4F46E5" Foreground="White"
+                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
+                Visibility="Collapsed"/>
+
+            <Button x:Name="CreateNewCardButton" Content="Neue Karte" Click="CreateNewCardButton_Click"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
                 Height="36" Padding="21,0" Background="#4F46E5" Foreground="White"
                 BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
                 Visibility="Collapsed"/>
 
             <Button x:Name="BackToCardsButton" Content="← Zurück" Click="BackToCardsButton_Click"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="5"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
                 Height="36" Padding="16,0" Background="Transparent" Foreground="#4F46E5"
                 BorderThickness="1" BorderBrush="#4F46E5" FontWeight="SemiBold" Cursor="Hand"
                 Visibility="Collapsed"/>
@@ -253,12 +259,12 @@
                     <Button x:Name="EasyButton" Content="Easy" Click="EasyButton_Click"
                             Width="62" Height="36" Margin="3" Background="#DBEAFE" Foreground="#1E40AF"
                             BorderThickness="0" Cursor="Hand"/>
-                    
-                <ContentControl Style="{StaticResource InfoIcon}">
-                    <ContentControl.ToolTip>
-                        <TextBlock Text="Again: kommt bald wieder. Hard: ca. 2 Stunden. Good: ca. 2 Tage. Easy: ca. 6 Tage. Mit jeder weiteren erfolgreichen Wiederholung verdoppelt sich der Abstand. Again setzt ihn zurück." TextWrapping="Wrap" MaxWidth="260"/>
-                    </ContentControl.ToolTip>
-                </ContentControl>
+
+                    <ContentControl Style="{StaticResource InfoIcon}">
+                        <ContentControl.ToolTip>
+                            <TextBlock Text="Again: kommt bald wieder. Hard: ca. 2 Stunden. Good: ca. 2 Tage. Easy: ca. 6 Tage. Mit jeder weiteren erfolgreichen Wiederholung verdoppelt sich der Abstand. Again setzt ihn zurück." TextWrapping="Wrap" MaxWidth="260"/>
+                        </ContentControl.ToolTip>
+                    </ContentControl>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -276,23 +282,23 @@
                            Foreground="#111827" HorizontalAlignment="Center" Margin="0,0,0,24"/>
 
                 <TextBlock Text="Frage" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
-                <TextBox x:Name="NewQuestionTextBox" Height="38" Padding="10,8"
+                <TextBox x:Name="NewQuestionTextBox" Height="38" Padding="10"
                          BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
 
                 <TextBlock Text="Antwort" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
-                <TextBox x:Name="NewAnswerTextBox" Height="38" Padding="10,8"
+                <TextBox x:Name="NewAnswerTextBox" Height="38" Padding="10"
                          BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
 
                 <StackPanel Orientation="Horizontal">
-                <TextBlock Text="Kategorie" FontSize="12" Foreground="#374151" Margin="0,0,4,4"/>
+                    <TextBlock Text="Kategorie" FontSize="12" Foreground="#374151" Margin="0,0,4,4"/>
                     <ContentControl Style="{StaticResource InfoIcon}" Margin="0,0,0,4">
-                    <ContentControl.ToolTip>
-                        <TextBlock Text="Wählen Sie eine Kategorie aus der Liste oder tippen Sie einen neuen Namen" TextWrapping="Wrap" MaxWidth="260"/>
-                    </ContentControl.ToolTip>
-                </ContentControl>
+                        <ContentControl.ToolTip>
+                            <TextBlock Text="Wählen Sie eine Kategorie aus der Liste oder tippen Sie einen neuen Namen" TextWrapping="Wrap" MaxWidth="260"/>
+                        </ContentControl.ToolTip>
+                    </ContentControl>
                 </StackPanel>
                 <ComboBox x:Name="CategoryComboBox" DisplayMemberPath="Name" IsEditable="True"
-                          Height="38" Margin="0,0,0,24"/>
+                          Height="38" Margin="0,0,0,24" Padding="10"/>
 
                 <Button x:Name="CreateCardButton" Content="Karte erstellen" Click="CreateCardButton_Click"
                         Height="40" Background="#4F46E5" Foreground="White"
