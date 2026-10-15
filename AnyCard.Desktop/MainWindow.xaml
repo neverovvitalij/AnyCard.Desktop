@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AnyCard.Desktop"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="800" Background="#F3F4F6">
+        Title="AnyCard" MinHeight="730" MinWidth="900" Background="#F3F4F6">
     <Window.Resources>
         <Style x:Key="InfoIcon" TargetType="ContentControl">
             <Setter Property="Width" Value="18"/>
@@ -222,14 +222,14 @@
 
         <!-- ===================== CARD REVIEW ===================== -->
         <Border Background="White" CornerRadius="16" Padding="32"
-                Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="420" HorizontalAlignment="Center" VerticalAlignment="Center"
                 x:Name="CardPanel" Visibility="Collapsed">
             <Border.Effect>
                 <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
             </Border.Effect>
 
             <StackPanel>
-                <TextBlock x:Name="QuestionText" Text="QuestionText" FontSize="18" FontWeight="SemiBold"
+                <TextBlock x:Name="QuestionText" Text="QuestionText" FontSize="20" FontWeight="SemiBold"
                            Foreground="#111827" TextAlignment="Center" TextWrapping="Wrap"
                            Margin="0,0,0,16"/>
 
@@ -271,7 +271,7 @@
 
         <!-- ===================== CREATE CARD ===================== -->
         <Border Background="White" CornerRadius="16" Padding="32"
-                Width="360" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="420" HorizontalAlignment="Center" VerticalAlignment="Center"
                 x:Name="CreateCardPanel" Visibility="Collapsed">
             <Border.Effect>
                 <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
@@ -305,6 +305,112 @@
                         BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
             </StackPanel>
         </Border>
+
+        <!-- ===================== OVERVIEW PANEL ===================== -->
+        <Border x:Name="OverviewPanel" Background="White" CornerRadius="16" Padding="20"
+                Width="580" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Visibility="Collapsed">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- Kopfzeile: Titel + Zähler -->
+                <TextBlock Text="Übersicht" FontSize="20" FontWeight="Bold" Foreground="#111827"
+                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                    <TextBlock x:Name="SummaryCardsText" Foreground="#374151" Margin="0,0,16,0"/>
+                    <TextBlock x:Name="SummaryCategoriesText" Foreground="#374151" Margin="0,0,16,0"/>
+                    <TextBlock x:Name="SummaryReviewText" Foreground="#4F46E5" FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <!-- Filter -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,12">
+                    <ComboBox x:Name="OverviewCategoryBox" DisplayMemberPath="Name"
+                              SelectionChanged="OverviewFilter_SelectionChanged"
+                              Width="160" Height="32" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="OverviewRatingBox" SelectedIndex="0"
+                              SelectionChanged="OverviewFilter_SelectionChanged"
+                              Width="160" Height="32">
+                        <ComboBoxItem Content="Alle Bewertungen"/>
+                        <ComboBoxItem Content="Again / neu"/>
+                        <ComboBoxItem Content="Hard"/>
+                        <ComboBoxItem Content="Good"/>
+                        <ComboBoxItem Content="Easy"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Karten 3×3 -->
+                <ItemsControl x:Name="OverviewCardsList" Height="372">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="3" Rows="3" VerticalAlignment="Top"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1"
+                                    CornerRadius="10" Padding="10" Margin="4" Height="116">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding CategoryName}" FontSize="11"
+                                               Foreground="#6B7280" TextTrimming="CharacterEllipsis"/>
+                                    <TextBlock Text="{Binding Question}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="#111827" TextWrapping="Wrap"
+                                               TextTrimming="CharacterEllipsis" MaxHeight="36" Margin="0,4,0,6"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border x:Name="RatingBadge" CornerRadius="4" Padding="6,1"
+                                                Background="#E5E7EB" Margin="0,0,8,0">
+                                            <TextBlock x:Name="RatingText" Text="{Binding UserRating}"
+                                                       FontSize="11" Foreground="#374151"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding CurrentStreak, StringFormat='Erfolge in Folge: {0}'}"
+                                                   FontSize="11" Foreground="#374151" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding NextShowtime, StringFormat='Nächste: {0:dd.MM.yyyy HH:mm}'}"
+                                               FontSize="11" Foreground="#6B7280" Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <!-- Farben wie bei den Bewertungsbuttons -->
+                            <DataTemplate.Triggers>
+                                <DataTrigger Binding="{Binding UserRating}" Value="Again">
+                                    <Setter TargetName="RatingBadge" Property="Background" Value="#FEE2E2"/>
+                                    <Setter TargetName="RatingText" Property="Foreground" Value="#991B1B"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UserRating}" Value="Hard">
+                                    <Setter TargetName="RatingBadge" Property="Background" Value="#FEF3C7"/>
+                                    <Setter TargetName="RatingText" Property="Foreground" Value="#92400E"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UserRating}" Value="Good">
+                                    <Setter TargetName="RatingBadge" Property="Background" Value="#D1FAE5"/>
+                                    <Setter TargetName="RatingText" Property="Foreground" Value="#065F46"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding UserRating}" Value="Easy">
+                                    <Setter TargetName="RatingBadge" Property="Background" Value="#DBEAFE"/>
+                                    <Setter TargetName="RatingText" Property="Foreground" Value="#1E40AF"/>
+                                </DataTrigger>
+                            </DataTemplate.Triggers>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock x:Name="OverviewEmptyText" Text="Keine Karten gefunden."
+                           Foreground="#6B7280" HorizontalAlignment="Center" Margin="0,8,0,0"
+                           Visibility="Collapsed"/>
+
+                <!-- Seitennavigation -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,12,0,0">
+                    <Button x:Name="PreviousPageButton" Content="‹" Click="PreviousPageButton_Click"
+                            Width="36" Height="32" Background="#EEF2FF" Foreground="#4F46E5"
+                            BorderThickness="0" FontWeight="Bold" Cursor="Hand"/>
+                    <TextBlock x:Name="PageInfoText" Text="Seite 1 von 1" Foreground="#374151"
+                               VerticalAlignment="Center" Margin="12,0"/>
+                    <Button x:Name="NextPageButton" Content="›" Click="NextPageButton_Click"
+                            Width="36" Height="32" Background="#EEF2FF" Foreground="#4F46E5"
+                            BorderThickness="0" FontWeight="Bold" Cursor="Hand"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
 
     </Grid>
 </Window>
