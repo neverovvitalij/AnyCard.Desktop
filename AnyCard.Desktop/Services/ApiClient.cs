@@ -1,7 +1,8 @@
 ﻿using AnyCard.Desktop.Models;
 using System.Net.Http;
-using System.Net.Http.Json;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Security.Policy;
 
 namespace AnyCard.Desktop.Services;
 
@@ -451,6 +452,61 @@ public class ApiClient
         catch (System.Text.Json.JsonException)
         {
             return new ApiResult<PagedResult<CardOverviewDto>>(null, ApiError.ServerError);
+        }
+    }
+
+    public async Task<ApiResult<UserSettingsDto>> GetUserSettingsAsync()
+    {
+        try
+        {
+            var response = await SendAsync(() => _httpClient.GetAsync("settings"));
+
+            if (response.IsSuccessStatusCode)
+            {
+                var userSettingsDto = await response.Content.ReadFromJsonAsync<UserSettingsDto>();
+                return new ApiResult<UserSettingsDto>(userSettingsDto, ApiError.None);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<UserSettingsDto>(null, ApiError.Unauthorized);
+            }
+            return new ApiResult<UserSettingsDto>(null, ApiError.ServerError);
+        }
+        catch (Exception ex) when (IsNetworkError(ex))
+        {
+            return new ApiResult<UserSettingsDto>(null, ApiError.NetworkUnavailable);
+        }
+        catch (System.Text.Json.JsonException)
+        {
+            return new ApiResult<UserSettingsDto>(null, ApiError.ServerError);
+        }
+    }
+
+    public async Task<ApiResult<UserSettingsDto>> UpdateUserSettingsAsync(TimeSpan again, TimeSpan hard, TimeSpan good, TimeSpan easy)
+    {
+        var userSettingsDto = new UserSettingsDto(again, hard, good, easy);
+
+        try
+        {
+            var response = await SendAsync(() => _httpClient.PutAsJsonAsync("settings", userSettingsDto));
+
+            if (response.IsSuccessStatusCode)
+            {
+                return new ApiResult<UserSettingsDto>(userSettingsDto, ApiError.None);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                return new ApiResult<UserSettingsDto>(null, ApiError.Unauthorized);
+            }
+            if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                return new ApiResult<UserSettingsDto>(null, ApiError.InvalidInput);
+            }
+            return new ApiResult<UserSettingsDto>(null, ApiError.ServerError);
+        }
+        catch (Exception ex) when (IsNetworkError(ex))
+        {
+            return new ApiResult<UserSettingsDto>(null, ApiError.NetworkUnavailable);
         }
     }
 }

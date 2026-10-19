@@ -26,6 +26,9 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="130"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -186,33 +189,38 @@
 
         <!-- ===================== TOP-LEVEL NAVIGATION ===================== -->
         <StackPanel Orientation="Vertical">
-            <ComboBox x:Name="CardCategoryBox" SelectionChanged="CardCategoryBox_SelectionChanged" DisplayMemberPath="Name"
-                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
-                Width="103" Height="36" Padding="10"
-                Background="White" Foreground="#111827"
-                BorderBrush="#D1D5DB" BorderThickness="1"
-                FontWeight="SemiBold" Cursor="Hand"
-                Visibility="Collapsed"/>
-
             <Button x:Name="ShowAllCardsButton" Content="Alle Karten" Click="ShowAllCardsButton_Click"
                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
                 Height="36" Padding="21,0" Background="#4F46E5" Foreground="White"
-                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
+                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Style="{StaticResource NavButtonStyle}"
+                Visibility="Collapsed"/>
+
+            <Button x:Name="SettingsButton" Content="Einstellungen" Click="SettingsButton_Click"
+                HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
+                Height="36" Padding="21,0" Background="#4F46E5" Foreground="White"
+                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Style="{StaticResource NavButtonStyle}"
                 Visibility="Collapsed"/>
 
             <Button x:Name="CreateNewCardButton" Content="Neue Karte" Click="CreateNewCardButton_Click"
                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
                 Height="36" Padding="21,0" Background="#4F46E5" Foreground="White"
-                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"
+                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" Style="{StaticResource NavButtonStyle}"
                 Visibility="Collapsed"/>
 
             <Button x:Name="BackToCardsButton" Content="← Zurück" Click="BackToCardsButton_Click"
                 HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,20,20,0"
                 Height="36" Padding="16,0" Background="Transparent" Foreground="#4F46E5"
                 BorderThickness="1" BorderBrush="#4F46E5" FontWeight="SemiBold" Cursor="Hand"
-                Visibility="Collapsed"/>
+                Visibility="Collapsed" Style="{StaticResource NavButtonStyle}"/>
         </StackPanel>
 
+        <ComboBox x:Name="CardCategoryBox" SelectionChanged="CardCategoryBox_SelectionChanged" DisplayMemberPath="Name"
+                HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,20,0"
+                Width="103" Height="36" Padding="10"
+                Background="White" Foreground="#111827"
+                BorderBrush="#D1D5DB" BorderThickness="1"
+                FontWeight="SemiBold" Cursor="Hand"
+                Visibility="Collapsed"/>
 
         <Button x:Name="LogoutButton" Content="Logout" Click="LogoutButton_Click"
                 HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20"
@@ -408,6 +416,99 @@
                             Width="36" Height="32" Background="#EEF2FF" Foreground="#4F46E5"
                             BorderThickness="0" FontWeight="Bold" Cursor="Hand"/>
                 </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- ===================== SETTINGS PANEL ===================== -->
+        <Border x:Name="SettingsPanel" Background="White" CornerRadius="16" Padding="24"
+                Width="420" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Visibility="Collapsed">
+            <Border.Effect>
+                <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <!-- Seitentitel -->
+                <TextBlock Text="Einstellungen" FontSize="20" FontWeight="Bold" Foreground="#111827"
+                           HorizontalAlignment="Center" Margin="0,0,0,16"/>
+
+                <!-- ========== Sektion: Wiederholungsintervalle ========== -->
+                <TextBlock Text="Wiederholungsintervalle" FontSize="15" FontWeight="SemiBold"
+                           Foreground="#111827" Margin="0,0,0,4"/>
+                <TextBlock Text="Erlaubt: 1 Minute bis 30 Tage" FontSize="12" Foreground="#6B7280"
+                           Margin="0,0,0,12"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Again -->
+                    <TextBlock Grid.Row="0" Grid.Column="0" Text="Again" Foreground="#991B1B"
+                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="AgainValueBox" Grid.Row="0" Grid.Column="1" Height="32" Margin="0,0,8,8"/>
+                    <ComboBox x:Name="AgainUnitBox" Grid.Row="0" Grid.Column="2" Height="32" Margin="0,0,0,8">
+                        <ComboBoxItem Content="Min"/>
+                        <ComboBoxItem Content="Std"/>
+                        <ComboBoxItem Content="Tage"/>
+                    </ComboBox>
+
+                    <!-- Hard -->
+                    <TextBlock Grid.Row="1" Grid.Column="0" Text="Hard" Foreground="#92400E"
+                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="HardValueBox" Grid.Row="1" Grid.Column="1" Height="32" Margin="0,0,8,8"/>
+                    <ComboBox x:Name="HardUnitBox" Grid.Row="1" Grid.Column="2" Height="32" Margin="0,0,0,8">
+                        <ComboBoxItem Content="Min"/>
+                        <ComboBoxItem Content="Std"/>
+                        <ComboBoxItem Content="Tage"/>
+                    </ComboBox>
+
+                    <!-- Good -->
+                    <TextBlock Grid.Row="2" Grid.Column="0" Text="Good" Foreground="#065F46"
+                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="GoodValueBox" Grid.Row="2" Grid.Column="1" Height="32" Margin="0,0,8,8"/>
+                    <ComboBox x:Name="GoodUnitBox" Grid.Row="2" Grid.Column="2" Height="32" Margin="0,0,0,8">
+                        <ComboBoxItem Content="Min"/>
+                        <ComboBoxItem Content="Std"/>
+                        <ComboBoxItem Content="Tage"/>
+                    </ComboBox>
+
+                    <!-- Easy -->
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Easy" Foreground="#1E40AF"
+                               FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="EasyValueBox" Grid.Row="3" Grid.Column="1" Height="32" Margin="0,0,8,8"/>
+                    <ComboBox x:Name="EasyUnitBox" Grid.Row="3" Grid.Column="2" Height="32" Margin="0,0,0,8">
+                        <ComboBoxItem Content="Min"/>
+                        <ComboBoxItem Content="Std"/>
+                        <ComboBoxItem Content="Tage"/>
+                    </ComboBox>
+                </Grid>
+
+                <!-- Meldung (Fehler / Gespeichert) -->
+                <TextBlock x:Name="SettingsMessageText" TextWrapping="Wrap" HorizontalAlignment="Center"
+                           Margin="0,8,0,0" Foreground="#065F46" FontWeight="SemiBold" FontSize="14" Visibility="Collapsed"/>
+
+                <!-- Buttons -->
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                    <Button x:Name="ResetSettingsButton" Content="Standard wiederherstellen"
+                            Click="ResetSettingsButton_Click"
+                            Height="36" Padding="12,0" Margin="0,0,8,0" Cursor="Hand"
+                            Background="#EEF2FF" Foreground="#4F46E5" BorderThickness="0"/>
+                    <Button x:Name="SaveSettingsButton" Content="Speichern"
+                            Click="SaveSettingsButton_Click"
+                            Height="36" Padding="16,0" Cursor="Hand"
+                            Background="#4F46E5" Foreground="White" BorderThickness="0" FontWeight="SemiBold"/>
+                </StackPanel>
+
+                <!-- Hier später weitere Sektionen ergänzen, z. B. "Konto" -->
             </StackPanel>
         </Border>
 
