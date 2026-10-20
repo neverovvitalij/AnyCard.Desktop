@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="AnyCard.Desktop.Views.CreateCardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AnyCard.Desktop.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <!-- ===================== CREATE CARD ===================== -->
+    <Border Background="White" CornerRadius="16" Padding="32"
+        Width="420" HorizontalAlignment="Center" VerticalAlignment="Center"
+        x:Name="CreateCardPanel">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
+        </Border.Effect>
+
+        <StackPanel>
+            <TextBlock Text="Neue Karte erstellen" FontSize="20" FontWeight="Bold"
+                   Foreground="#111827" HorizontalAlignment="Center" Margin="0,0,0,24"/>
+
+            <TextBlock Text="Frage" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
+            <TextBox x:Name="NewQuestionTextBox" Height="38" Padding="10"
+                 BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
+
+            <TextBlock Text="Antwort" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
+            <TextBox x:Name="NewAnswerTextBox" Height="38" Padding="10"
+                 BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Kategorie" FontSize="12" Foreground="#374151" Margin="0,0,4,4"/>
+                <ContentControl Style="{StaticResource InfoIcon}" Margin="0,0,0,4">
+                    <ContentControl.ToolTip>
+                        <TextBlock Text="Wählen Sie eine Kategorie aus der Liste oder tippen Sie einen neuen Namen" TextWrapping="Wrap" MaxWidth="260"/>
+                    </ContentControl.ToolTip>
+                </ContentControl>
+            </StackPanel>
+            <ComboBox x:Name="CategoryComboBox" DisplayMemberPath="Name" IsEditable="True"
+                  Height="38" Margin="0,0,0,24" Padding="10"/>
+
+            <Button x:Name="CreateCardButton" Content="Karte erstellen" Click="CreateCardButton_Click"
+                Height="40" Background="#4F46E5" Foreground="White"
+                BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+        </StackPanel>
+    </Border>
+</UserControl>

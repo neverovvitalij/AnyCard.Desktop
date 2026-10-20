@@ -4,6 +4,27 @@
              xmlns:local="clr-namespace:AnyCard.Desktop"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <Style x:Key="InfoIcon" TargetType="ContentControl">
+            <Setter Property="Width" Value="18"/>
+            <Setter Property="Height" Value="18"/>
+            <Setter Property="Cursor" Value="Help"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="ToolTipService.InitialShowDelay" Value="200"/>
+            <Setter Property="ToolTipService.ShowDuration" Value="30000"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContentControl">
+                        <Grid>
+                            <Ellipse Stroke="#9CA3AF" StrokeThickness="1.5" Fill="Transparent"/>
+                            <TextBlock Text="i" FontWeight="Bold" FontSize="11" Foreground="#6B7280"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="130"/>
+        </Style>
     </Application.Resources>
 </Application>

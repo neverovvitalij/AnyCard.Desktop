@@ -7,28 +7,7 @@
         mc:Ignorable="d"
         Title="AnyCard" MinHeight="730" MinWidth="900" Background="#F3F4F6">
     <Window.Resources>
-        <Style x:Key="InfoIcon" TargetType="ContentControl">
-            <Setter Property="Width" Value="18"/>
-            <Setter Property="Height" Value="18"/>
-            <Setter Property="Cursor" Value="Help"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="ToolTipService.InitialShowDelay" Value="200"/>
-            <Setter Property="ToolTipService.ShowDuration" Value="30000"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ContentControl">
-                        <Grid>
-                            <Ellipse Stroke="#9CA3AF" StrokeThickness="1.5" Fill="Transparent"/>
-                            <TextBlock Text="i" FontWeight="Bold" FontSize="11" Foreground="#6B7280"
-                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Grid>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style x:Key="NavButtonStyle" TargetType="Button">
-            <Setter Property="Width" Value="130"/>
-        </Style>
+        
     </Window.Resources>
 
     <Grid>
@@ -274,43 +253,6 @@
                         </ContentControl.ToolTip>
                     </ContentControl>
                 </StackPanel>
-            </StackPanel>
-        </Border>
-
-        <!-- ===================== CREATE CARD ===================== -->
-        <Border Background="White" CornerRadius="16" Padding="32"
-                Width="420" HorizontalAlignment="Center" VerticalAlignment="Center"
-                x:Name="CreateCardPanel" Visibility="Collapsed">
-            <Border.Effect>
-                <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
-            </Border.Effect>
-
-            <StackPanel>
-                <TextBlock Text="Neue Karte erstellen" FontSize="20" FontWeight="Bold"
-                           Foreground="#111827" HorizontalAlignment="Center" Margin="0,0,0,24"/>
-
-                <TextBlock Text="Frage" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
-                <TextBox x:Name="NewQuestionTextBox" Height="38" Padding="10"
-                         BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
-
-                <TextBlock Text="Antwort" FontSize="12" Foreground="#374151" Margin="0,0,0,4"/>
-                <TextBox x:Name="NewAnswerTextBox" Height="38" Padding="10"
-                         BorderBrush="#D1D5DB" Margin="0,0,0,16"/>
-
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="Kategorie" FontSize="12" Foreground="#374151" Margin="0,0,4,4"/>
-                    <ContentControl Style="{StaticResource InfoIcon}" Margin="0,0,0,4">
-                        <ContentControl.ToolTip>
-                            <TextBlock Text="Wählen Sie eine Kategorie aus der Liste oder tippen Sie einen neuen Namen" TextWrapping="Wrap" MaxWidth="260"/>
-                        </ContentControl.ToolTip>
-                    </ContentControl>
-                </StackPanel>
-                <ComboBox x:Name="CategoryComboBox" DisplayMemberPath="Name" IsEditable="True"
-                          Height="38" Margin="0,0,0,24" Padding="10"/>
-
-                <Button x:Name="CreateCardButton" Content="Karte erstellen" Click="CreateCardButton_Click"
-                        Height="40" Background="#4F46E5" Foreground="White"
-                        BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
             </StackPanel>
         </Border>
 
