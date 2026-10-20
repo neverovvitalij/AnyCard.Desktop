@@ -16,13 +16,15 @@ public partial class MainWindow : Window
     private readonly CategoryDto _allCategoriesOption = new(0, "Kategorien");
     private int? _selectedCategoryId = null;
     private bool _isUpdatingCategoryList;
-    private int _overviewPage = 1;
     private readonly SettingsView _settingsView;
+    private readonly OverviewView _overviewView;
     public MainWindow()
     {
         InitializeComponent();
         _settingsView = new SettingsView(_apiClient);
         _settingsView.SessionExpired += (s, e) => ShowLoginScreen();
+        _overviewView = new OverviewView(_apiClient);
+        _overviewView.SessionExpired += (s, e) => ShowLoginScreen();
     }
 
     private string GetLoginPassword()
@@ -587,21 +589,11 @@ public partial class MainWindow : Window
 
     private async void ShowAllCardsButton_Click(object sender, RoutedEventArgs e)
     {
-        if (!await LoadCategoriesAsync())
-        {
-            return;
-        }
-        var filterItems = new List<CategoryDto> { _allCategoriesOption }.Concat(_categories).ToList();
-        OverviewCategoryBox.ItemsSource = filterItems;
-        OverviewCategoryBox.SelectedItem = _allCategoriesOption;
-        OverviewRatingBox.SelectedIndex = 0;
-        _overviewPage = 1;
         HideAllScreens();
-        OverviewPanel.Visibility = Visibility.Visible;
         BackToCardsButton.Visibility = Visibility.Visible;
         SettingsButton.Visibility = Visibility.Visible;
-        await LoadSummaryAsync();
-        await LoadOverviewAsync();
+        ScreenHost.Content = _overviewView;
+        await _overviewView.LoadAsync();
     }
 
     private void HideAllScreens()
@@ -616,89 +608,10 @@ public partial class MainWindow : Window
         BackToCardsButton.Visibility = Visibility.Collapsed;
         CardPanel.Visibility = Visibility.Collapsed;
         CreateCardPanel.Visibility = Visibility.Collapsed;
-        OverviewPanel.Visibility = Visibility.Collapsed;
         ScreenHost.Content = null;
     }
 
-    private async Task LoadOverviewAsync()
-    {
-        UserRating? userRating = OverviewRatingBox.SelectedIndex == 0
-            ? null
-            : (UserRating)(OverviewRatingBox.SelectedIndex - 1);
 
-        var selected = OverviewCategoryBox.SelectedItem as CategoryDto;
-        int? categoryId = selected == null || selected.Id == 0 ? null : selected.Id;
-
-        var response = await _apiClient.GetCardsOverviewAsync(categoryId, userRating, _overviewPage);
-        if (response.Error == ApiError.Unauthorized)
-        {
-            ShowLoginScreen();
-            return;
-        }
-        if (response.Error == ApiError.NetworkUnavailable)
-        {
-            MessageBox.Show("Server nicht erreichbar.");
-            return;
-        }
-        if (response.Error != ApiError.None)
-        {
-            MessageBox.Show("Fehler beim Laden der Karten.");
-            return;
-        }
-
-        var result = response.Data!.Items.Select(ct => ct with { NextShowtime = ct.NextShowtime.ToLocalTime() }).ToList();
-        OverviewCardsList.ItemsSource = result;
-        OverviewEmptyText.Visibility = result.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-
-        PageInfoText.Text = $"Seite {response.Data.PageNumber} von {response.Data.TotalPages}";
-        PreviousPageButton.IsEnabled = response.Data.PageNumber > 1;
-        NextPageButton.IsEnabled = response.Data.TotalPages > response.Data.PageNumber;
-    }
-
-    private async Task LoadSummaryAsync()
-    {
-        var response = await _apiClient.GetProgressSummaryAsync();
-        if (response.Error == ApiError.Unauthorized)
-        {
-            ShowLoginScreen();
-            return;
-        }
-        if (response.Error == ApiError.NetworkUnavailable)
-        {
-            MessageBox.Show("Server nicht erreichbar.");
-            return;
-        }
-        if (response.Error != ApiError.None)
-        {
-            MessageBox.Show("Fehler beim Laden der Statistik.");
-            return;
-        }
-
-        SummaryCardsText.Text = $"Karten: {response.Data!.CardsCount}";
-        SummaryCategoriesText.Text = $"Kategorien: {response.Data.CategoriesCount}";
-        SummaryReviewText.Text = $"Fällig: {response.Data.CardsToReviewCount}";
-    }
-    private async void OverviewFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (OverviewPanel.Visibility == Visibility.Collapsed)
-        {
-            return;
-        }
-        _overviewPage = 1;
-        await LoadOverviewAsync();
-    }
-
-    private async void PreviousPageButton_Click(object sender, RoutedEventArgs e)
-    {
-        _overviewPage--;
-        await LoadOverviewAsync();
-    }
-
-    private async void NextPageButton_Click(object sender, RoutedEventArgs e)
-    {
-        _overviewPage++;
-        await LoadOverviewAsync();
-    }
     private async void SettingsButton_Click(object sender, RoutedEventArgs e)
     {
         HideAllScreens();
@@ -708,6 +621,6 @@ public partial class MainWindow : Window
         ScreenHost.Content = _settingsView;
         await _settingsView.LoadAsync();
     }
-    
+
 }
 
