@@ -2,16 +2,12 @@
 using AnyCard.Desktop.Services;
 using AnyCard.Desktop.Views;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Documents;
 
 namespace AnyCard.Desktop;
 
 public partial class MainWindow : Window
 {
     private readonly ApiClient _apiClient = new();
-    private List<CardDto> _dueCards = new();
-    private int _currentCardIndex = 0;
     private List<CategoryDto> _categories = new();
     private readonly CategoryDto _allCategoriesOption = new(0, "Kategorien");
     private int? _selectedCategoryId = null;
@@ -19,6 +15,7 @@ public partial class MainWindow : Window
     private readonly SettingsView _settingsView;
     private readonly OverviewView _overviewView;
     private readonly CreateCardView _createCardView;
+    private readonly ReviewView _reviewView;
     public MainWindow()
     {
         InitializeComponent();
@@ -29,6 +26,8 @@ public partial class MainWindow : Window
         _createCardView = new CreateCardView(_apiClient);
         _createCardView.SessionExpired += (s, e) => ShowLoginScreen();
         _createCardView.CardCreated += async (s, e) => await LoadDueCardsAsync();
+        _reviewView = new ReviewView(_apiClient);
+        _reviewView.SessionExpired += (s, e) => ShowLoginScreen();
     }
 
     private string GetLoginPassword()
@@ -39,29 +38,7 @@ public partial class MainWindow : Window
     {
         return _registerPasswordVisible ? RegisterUserPasswordVisible.Text : RegisterUserPassword.Password;
     }
-    private async Task<bool> LoadDueCardsAsync()
-    {
-        var apiResult = await _apiClient.GetDueCardsAsync(_selectedCategoryId);
-        if (apiResult.Error == ApiError.Unauthorized)
-        {
-            ShowLoginScreen();
-            return false;
-        }
-        if (apiResult.Error == ApiError.NetworkUnavailable)
-        {
-            MessageBox.Show("Server nicht erreichbar.");
-            return false;
-        }
-        if (apiResult.Error != ApiError.None)
-        {
-            MessageBox.Show("Fehler beim Laden der Karten.");
-            return false;
-        }
-        _dueCards = apiResult.Data ?? new List<CardDto>();
-        _currentCardIndex = 0;
-        ShowCurrentCard();
-        return true;
-    }
+    
     private async Task<bool> LoadCategoriesAsync()
     {
         var apiResult = await _apiClient.GetCategoriesAsync();
@@ -104,44 +81,11 @@ public partial class MainWindow : Window
 
         return true;
     }
-    private void ShowCurrentCard()
-    {
-        if (_dueCards.Count > 0 && _currentCardIndex < _dueCards.Count)
-        {
-            var currentCard = _dueCards[_currentCardIndex];
-            QuestionText.Text = currentCard.Question;
-            AnswerText.Text = currentCard.Answer;
-            ShowAnswerButton.Visibility = Visibility.Visible;
-            HideAnswerButton.Visibility = Visibility.Collapsed;
-            RatingButtonsPanel.Visibility = Visibility.Collapsed;
-            CardCategoryBox.Visibility = Visibility.Visible;
-        }
-        else
-        {
-            QuestionText.Text = "Keine Karten verfügbar.";
-            AnswerText.Text = string.Empty;
-            AnswerText.Visibility = Visibility.Collapsed;
-            ShowAnswerButton.Visibility = Visibility.Collapsed;
-            HideAnswerButton.Visibility = Visibility.Collapsed;
-            RatingButtonsPanel.Visibility = Visibility.Collapsed;
-        }
-    }
-    private async Task LoadNextCard(int cardId, UserRating userRating)
-    {
-        var apiResult = await _apiClient.ReviewCardAsync(cardId, userRating);
-        if (apiResult.Error == ApiError.Unauthorized)
-        {
-            ShowLoginScreen();
-            return;
-        }
-        if (apiResult.Error != ApiError.None)
-        {
-            MessageBox.Show("Fehler beim Bewerten der Karte.");
-        }
-        _currentCardIndex++;
-        ShowCurrentCard();
-    }
 
+    private async Task<bool> LoadDueCardsAsync()
+    {
+        return await _reviewView.LoadAsync(_selectedCategoryId);
+    }
     private async void LoginButton_Click(object sender, RoutedEventArgs e)
     {
         if (string.IsNullOrWhiteSpace(EmailTextBox.Text) || string.IsNullOrWhiteSpace(GetLoginPassword()))
@@ -248,45 +192,8 @@ public partial class MainWindow : Window
         await _createCardView.LoadAsync();
     }
 
-    private void ShowAnswerButton_Click(object sender, RoutedEventArgs e)
-    {
-        AnswerText.Visibility = Visibility.Visible;
-        RatingButtonsPanel.Visibility = Visibility.Visible;
-        HideAnswerButton.Visibility = Visibility.Visible;
-        ShowAnswerButton.Visibility = Visibility.Collapsed;
-    }
-    private void HideAnswerButton_Click(object sender, RoutedEventArgs e)
-    {
-        AnswerText.Visibility = Visibility.Collapsed;
-        RatingButtonsPanel.Visibility = Visibility.Collapsed;
-        HideAnswerButton.Visibility = Visibility.Collapsed;
-        ShowAnswerButton.Visibility = Visibility.Visible;
-    }
-    private async void AgainButton_Click(object sender, RoutedEventArgs e)
-    {
-        await LoadNextCard(_dueCards[_currentCardIndex].Id, UserRating.Again);
-        AnswerText.Visibility = Visibility.Collapsed;
-        RatingButtonsPanel.Visibility = Visibility.Collapsed;
-
-    }
-    private async void EasyButton_Click(object sender, RoutedEventArgs e)
-    {
-        await LoadNextCard(_dueCards[_currentCardIndex].Id, UserRating.Easy);
-        AnswerText.Visibility = Visibility.Collapsed;
-        RatingButtonsPanel.Visibility = Visibility.Collapsed;
-    }
-    private async void GoodButton_Click(object sender, RoutedEventArgs e)
-    {
-        await LoadNextCard(_dueCards[_currentCardIndex].Id, UserRating.Good);
-        AnswerText.Visibility = Visibility.Collapsed;
-        RatingButtonsPanel.Visibility = Visibility.Collapsed;
-    }
-    private async void HardButton_Click(object sender, RoutedEventArgs e)
-    {
-        await LoadNextCard(_dueCards[_currentCardIndex].Id, UserRating.Hard);
-        AnswerText.Visibility = Visibility.Collapsed;
-        RatingButtonsPanel.Visibility = Visibility.Collapsed;
-    }
+    
+    
     private async void BackToCardsButton_Click(object sender, RoutedEventArgs e)
     {
         if (!await LoadDueCardsAsync())
@@ -294,7 +201,7 @@ public partial class MainWindow : Window
             return;
         }
         HideAllScreens();
-        CardPanel.Visibility = Visibility.Visible;
+        ScreenHost.Content = _reviewView;
         CreateNewCardButton.Visibility = Visibility.Visible;
         CardCategoryBox.Visibility = Visibility.Visible;
         ShowAllCardsButton.Visibility = Visibility.Visible;
@@ -310,12 +217,9 @@ public partial class MainWindow : Window
         LogoutButton.Visibility = Visibility.Collapsed;
         _selectedCategoryId = null;
         CardCategoryBox.ItemsSource = null;
-        _dueCards = new();
         _categories = new();
-        _currentCardIndex = 0;
         _passwordVisible = false;
         _registerPasswordVisible = false;
-        QuestionText.Text = string.Empty;
         RegisterEmailTextBox.Clear();
         RegisterUserPassword.Clear();
         RegisterUserPasswordVisible.Clear();
@@ -332,7 +236,7 @@ public partial class MainWindow : Window
     private void ShowCardsScreen()
     {
         HideAllScreens();
-        CardPanel.Visibility = Visibility.Visible;
+        ScreenHost.Content = _reviewView;
         CreateNewCardButton.Visibility = Visibility.Visible;
         LogoutButton.Visibility = Visibility.Visible;
         CardCategoryBox.Visibility = Visibility.Visible;
@@ -533,7 +437,6 @@ public partial class MainWindow : Window
         ShowAllCardsButton.Visibility = Visibility.Collapsed;
         CreateNewCardButton.Visibility = Visibility.Collapsed;
         BackToCardsButton.Visibility = Visibility.Collapsed;
-        CardPanel.Visibility = Visibility.Collapsed;
         ScreenHost.Content = null;
     }
 
