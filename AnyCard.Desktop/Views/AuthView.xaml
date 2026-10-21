@@ -1,0 +1,162 @@
+﻿<UserControl x:Class="AnyCard.Desktop.Views.AuthView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AnyCard.Desktop.Views"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+
+    <Border Background="White" CornerRadius="16" Padding="32"
+        Width="320" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border.Effect>
+            <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
+        </Border.Effect>
+
+        <Grid>
+
+            <!-- LOGIN -->
+            <StackPanel x:Name="LoginPanel">
+                <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
+                       Foreground="#111827" HorizontalAlignment="Center"/>
+                <TextBlock Text="Melde dich an" FontSize="13" Foreground="#6B7280"
+                       HorizontalAlignment="Center" Margin="0,4,0,24"/>
+
+                <TextBox x:Name="EmailTextBox" Height="38" Padding="10"
+                     BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                <Grid Margin="0,0,0,20">
+                    <PasswordBox x:Name="UserPassword" Height="42" Padding="10"/>
+                    <TextBox x:Name="UserPasswordVisible" Height="42" Padding="10" Visibility="Collapsed"/>
+                    <Button x:Name="TogglePasswordButton" Content="👁" Click="TogglePasswordButton_Click"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"
+                        Background="Transparent" BorderThickness="0" Padding="4"/>
+                </Grid>
+
+                <Button x:Name="LoginButton" Content="Login" Click="LoginButton_Click"
+                    Height="40" Background="#4F46E5" Foreground="White"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
+
+                <Button x:Name="GoToRegisterButton" Content="Noch kein Konto? Registrieren"
+                    Click="SwitchRegisterLoginButton_Click"
+                    Height="32" Margin="0,12,0,0"
+                    Background="Transparent" Foreground="#4F46E5"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+
+                <Button x:Name="GoToForgotPasswordButton" Content="Passwort vergessen?"
+                    Click="GoToForgotPasswordButton_Click"
+                    Height="32" Margin="0,12,0,0"
+                    Background="Transparent" Foreground="#4F46E5"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+            </StackPanel>
+
+            <!-- REGISTER -->
+            <StackPanel x:Name="RegisterPanel" Visibility="Collapsed">
+                <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
+                       Foreground="#111827" HorizontalAlignment="Center"/>
+                <TextBlock Text="Registrieren" FontSize="13" Foreground="#6B7280"
+                       HorizontalAlignment="Center" Margin="0,4,0,24"/>
+
+                <TextBlock Text="E-Mail" FontSize="13" Foreground="#6B7280"
+                     HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                <TextBox x:Name="RegisterEmailTextBox" Height="38" Padding="10"
+                     BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Passwort mindestens 8 Zeichen." FontSize="13" Foreground="#6B7280"
+                        HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                <Grid Margin="0,0,0,20">
+                    <PasswordBox x:Name="RegisterUserPassword" Height="42" Padding="10"/>
+                    <TextBox x:Name="RegisterUserPasswordVisible" Height="42" Padding="10" Visibility="Collapsed"/>
+                    <Button x:Name="ToggleRegisterLoginButton" Content="👁" Click="ToggleRegisterLoginButton_Click"
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,8,0"
+                        Background="Transparent" BorderThickness="0" Padding="4"/>
+                </Grid>
+
+                <Button x:Name="RegisterButton" Content="Registrieren" Click="RegisterButton_Click"
+                    Height="40" Background="#4F46E5" Foreground="White"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
+
+                <Button x:Name="GoToLoginButton" Content="Bereits registriert? Anmelden"
+                    Click="SwitchRegisterLoginButton_Click"
+                    Height="32" Margin="0,12,0,0"
+                    Background="Transparent" Foreground="#4F46E5"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+            </StackPanel>
+
+            <!-- FORGOT PASSWORD -->
+            <StackPanel x:Name="ForgotPasswordPanel" Visibility="Collapsed">
+                <ContentControl Style="{StaticResource InfoIcon}" HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <ContentControl.ToolTip>
+                        <TextBlock Text="Wir senden einen Code an diese Adresse. Der Code ist 15 Minuten gültig. Einen neuen Code können Sie frühestens nach 1 Minute anfordern. Prüfen Sie auch den Spam-Ordner." TextWrapping="Wrap" MaxWidth="260"/>
+                    </ContentControl.ToolTip>
+                </ContentControl>
+
+                <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
+                    Foreground="#111827" HorizontalAlignment="Center"/>
+                <TextBlock Text="Passwort vergessen?" FontSize="13" Foreground="#6B7280"
+                    HorizontalAlignment="Center" Margin="0,4,0,24"/>
+
+                <TextBox x:Name="ForgotPasswordEmailTextBox" Height="38" Padding="10"
+                    BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                <Button x:Name="ForgotPasswordButton" Content="Code anfordern" Click="ForgotPasswordButton_Click"
+                    Height="40" Background="#4F46E5" Foreground="White"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
+
+                <Button x:Name="GoToResetPassword" Content="Ich habe einen Reset-Code erhalten"
+                    Click="GoToResetPasswordButton_Click"
+                    Height="32" Margin="0,12,0,0"
+                    Background="Transparent" Foreground="#4F46E5"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+
+                <Button x:Name="BackToLoginButton" Content="Zurück zum Login"
+                    Click="BackToLoginButton_Click"
+                    Height="32" Margin="0,12,0,0"
+                    Background="Transparent" Foreground="#4F46E5"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+            </StackPanel>
+
+            <!-- RESET PASSWORD -->
+            <StackPanel x:Name="ResetPasswordPanel" Visibility="Collapsed">
+                <ContentControl Style="{StaticResource InfoIcon}" HorizontalAlignment="Right" VerticalAlignment="Top">
+                    <ContentControl.ToolTip>
+                        <TextBlock Text="Geben Sie den Code aus der E-Mail ein. Nach 5 falschen Eingaben wird der Code ungültig, dann fordern Sie einen neuen an." TextWrapping="Wrap" MaxWidth="260"/>
+                    </ContentControl.ToolTip>
+                </ContentControl>
+
+                <TextBlock Text="AnyCard" FontSize="26" FontWeight="Bold"
+                    Foreground="#111827" HorizontalAlignment="Center"/>
+                <TextBlock Text="Passwort zurücksetzen" FontSize="13" Foreground="#6B7280"
+                    HorizontalAlignment="Center" Margin="0,4,0,24"/>
+
+                <TextBlock Text="E-Mail-Adresse" FontSize="13" Foreground="#6B7280"
+                    HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                <TextBox x:Name="ResetPasswordEmailTextBox" Height="38" Padding="10"
+                    BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Reset-Code" FontSize="13" Foreground="#6B7280"
+                    HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                <TextBox x:Name="ResetPasswordCodeTextBox" Height="38" Padding="10"
+                    BorderBrush="#D1D5DB" Margin="0,0,0,12"/>
+
+                <TextBlock Text="Neues Passwort. Mindestens 8 Zeichen." FontSize="13" Foreground="#6B7280"
+                    HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                <PasswordBox x:Name="NewUserPassword" Height="42" Margin="0,0,0,12" Padding="10"/>
+                <TextBlock Text="Passwort wiederholen" FontSize="13" Foreground="#6B7280"
+                    HorizontalAlignment="Center" Margin="0,4,0,8"/>
+                <PasswordBox x:Name="RepeatNewUserPassword" Height="42" Margin="0,0,0,20" Padding="10"/>
+
+                <Button x:Name="ResetPasswordButton" Content="Passwort zurücksetzen" Click="ResetPasswordButton_Click"
+                    Height="40" Background="#4F46E5" Foreground="White"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand" IsDefault="True"/>
+
+                <Button x:Name="BackToLoginButton2" Content="Zurück zum Login"
+                    Click="BackToLoginButton_Click"
+                    Height="32" Margin="0,12,0,0"
+                    Background="Transparent" Foreground="#4F46E5"
+                    BorderThickness="0" FontWeight="SemiBold" Cursor="Hand"/>
+            </StackPanel>
+
+        </Grid>
+    </Border>
+</UserControl>
