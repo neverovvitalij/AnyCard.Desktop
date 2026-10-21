@@ -79,12 +79,28 @@ public partial class SettingsView : UserControl
         SettingsMessageText.Text = "Gespeichert";
         SettingsMessageText.Visibility = Visibility.Visible;
     }
-    private void ResetSettingsButton_Click(object sender, RoutedEventArgs e)
+    private async void ResetSettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        ShowInterval(AgainValueBox, AgainUnitBox, TimeSpan.FromMinutes(1));
-        ShowInterval(HardValueBox, HardUnitBox, TimeSpan.FromHours(2));
-        ShowInterval(GoodValueBox, GoodUnitBox, TimeSpan.FromDays(2));
-        ShowInterval(EasyValueBox, EasyUnitBox, TimeSpan.FromDays(6));
+        var response = await _apiClient.GetDefaultSettingsAsync();
+        if (response.Error == ApiError.Unauthorized)
+        {
+            SessionExpired?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+        if (response.Error == ApiError.NetworkUnavailable)
+        {
+            MessageBox.Show("Server nicht erreichbar.");
+            return;
+        }
+        if (response.Error != ApiError.None)
+        {
+            MessageBox.Show("Fehler beim Laden der Einstellungen.");
+            return;
+        }
+        ShowInterval(AgainValueBox, AgainUnitBox, response.Data!.Again);
+        ShowInterval(HardValueBox, HardUnitBox, response.Data.Hard);
+        ShowInterval(GoodValueBox, GoodUnitBox, response.Data.Good);
+        ShowInterval(EasyValueBox, EasyUnitBox, response.Data.Easy);
     }
 
     private static (int Value, int UnitIndex) SplitInterval(TimeSpan interval)
