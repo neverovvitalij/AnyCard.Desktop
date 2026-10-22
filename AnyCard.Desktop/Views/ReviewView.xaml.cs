@@ -56,6 +56,7 @@ public partial class ReviewView : UserControl
             QuestionText.Text = currentCard.Question;
             AnswerText.Text = currentCard.Answer;
             ShowAnswerButton.Visibility = Visibility.Visible;
+            DeleteCardButton.Visibility = Visibility.Visible;
             HideAnswerButton.Visibility = Visibility.Collapsed;
             RatingButtonsPanel.Visibility = Visibility.Collapsed;
         }
@@ -67,6 +68,7 @@ public partial class ReviewView : UserControl
             ShowAnswerButton.Visibility = Visibility.Collapsed;
             HideAnswerButton.Visibility = Visibility.Collapsed;
             RatingButtonsPanel.Visibility = Visibility.Collapsed;
+            DeleteCardButton.Visibility = Visibility.Collapsed;
         }
     }
     private async Task LoadNextCard(int cardId, UserRating userRating)
@@ -91,7 +93,7 @@ public partial class ReviewView : UserControl
         ShowCurrentCard();
     }
 
-    public async Task<bool> LoadCardAsync(int cardId)
+    public async Task<bool> LoadCardByIdAsync(int cardId)
     {
         var response = await _apiClient.GetCardByIdAsync(cardId);
         if (response.Error == ApiError.Unauthorized)
@@ -154,6 +156,44 @@ public partial class ReviewView : UserControl
         await LoadNextCard(_dueCards[_currentCardIndex].Id, UserRating.Hard);
         AnswerText.Visibility = Visibility.Collapsed;
         RatingButtonsPanel.Visibility = Visibility.Collapsed;
+    }
+
+    private async void DeleteCardButton_Click(object sender, RoutedEventArgs e)
+    {
+        var data = _dueCards[_currentCardIndex];
+        var result = MessageBox.Show(
+            $"Karte \"{data.Question}\" wirklich löschen?",
+            "Karte löschen",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+        var response = await _apiClient.DeleteCardAsync(data.Id);
+        if (response.Error == ApiError.Unauthorized)
+        {
+            SessionExpired?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+        if (response.Error == ApiError.NetworkUnavailable)
+        {
+            MessageBox.Show("Server nicht erreichbar.");
+            return;
+        }
+        if (response.Error != ApiError.None)
+        {
+            MessageBox.Show("Fehler beim Löschen der Karte.");
+            return;
+        }
+        if (_isSingleCardMode)
+        {
+            _isSingleCardMode = false;
+            SingleCardReviewed?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+        _dueCards.RemoveAt(_currentCardIndex);
+        ShowCurrentCard();
     }
 }
 

@@ -41,7 +41,7 @@ public partial class MainWindow : Window
         _overviewView.CardSelected += async (s, cardId) =>
         {
             ShowCardsScreen();
-            await _reviewView.LoadCardAsync(cardId);
+            await _reviewView.LoadCardByIdAsync(cardId);
         };
 
         _authView = new AuthView(_apiClient);

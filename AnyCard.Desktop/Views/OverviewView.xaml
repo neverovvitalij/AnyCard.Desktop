@@ -51,8 +51,13 @@
                         <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1"
                             CornerRadius="10" Padding="10" Margin="4" Height="116" Cursor="Hand" MouseLeftButtonUp="OverviewCard_Click">
                             <StackPanel>
+                                <Grid>
+                                <Button Style="{StaticResource DeleteButtonStyle}"
+                                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                                        Click="DeleteCardButton_Click"/>
                                 <TextBlock Text="{Binding CategoryName}" FontSize="11"
                                        Foreground="#6B7280" TextTrimming="CharacterEllipsis"/>
+                                </Grid>
                                 <TextBlock Text="{Binding Question}" FontSize="13" FontWeight="SemiBold"
                                        Foreground="#111827" TextWrapping="Wrap"
                                        TextTrimming="CharacterEllipsis" MaxHeight="36" Margin="0,4,0,6"/>

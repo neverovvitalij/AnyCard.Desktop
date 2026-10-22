@@ -348,4 +348,21 @@ public class ApiClient
     public Task<ApiResult<UserSettingsDto>> GetDefaultSettingsAsync() => GetAsync<UserSettingsDto>("settings/defaults");
 
     public Task<ApiResult<CardDto>> GetCardByIdAsync(int cardId) => GetAsync<CardDto>($"cards/{cardId}");
+
+    public async Task<ApiResult<bool>> DeleteCardAsync(int cardId)
+    {
+        try
+        {
+            var response = await SendAsync(() => _httpClient.DeleteAsync($"cards/{cardId}"));
+            if (response.IsSuccessStatusCode)
+            {
+                return new ApiResult<bool>(true, ApiError.None);
+            }
+            return new ApiResult<bool>(false, MapError(response.StatusCode));
+        }
+        catch (Exception ex) when (IsNetworkError(ex))
+        {
+            return new ApiResult<bool>(false, ApiError.NetworkUnavailable);
+        }
+    }
 }

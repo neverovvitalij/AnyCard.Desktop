@@ -145,6 +145,39 @@ public partial class OverviewView : UserControl
         _overviewPage++;
         await LoadOverviewAsync();
     }
+
+    private async void DeleteCardButton_Click(object sender, RoutedEventArgs e)
+    {
+        var button = (Button)sender;
+        var data = (CardOverviewDto)button.DataContext;
+        var result = MessageBox.Show(
+            $"Karte \"{data.Question}\" wirklich löschen?",
+            "Karte löschen",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning);
+        if (result != MessageBoxResult.Yes)
+        {
+            return;
+        }
+        var response = await _apiClient.DeleteCardAsync(data.CardId);
+        if (response.Error == ApiError.Unauthorized)
+        {
+            SessionExpired?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+        if (response.Error == ApiError.NetworkUnavailable)
+        {
+            MessageBox.Show("Server nicht erreichbar.");
+            return;
+        }
+        if (response.Error != ApiError.None)
+        {
+            MessageBox.Show("Fehler beim Löschen der Karte.");
+            return;
+        }
+        await RefreshAsync();
+    }
+
     private void OverviewCard_Click(object sender, RoutedEventArgs e)
     {
         var border = (Border)sender;
