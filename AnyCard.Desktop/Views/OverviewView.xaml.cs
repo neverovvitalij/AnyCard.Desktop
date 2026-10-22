@@ -60,6 +60,12 @@ public partial class OverviewView : UserControl
         await LoadOverviewAsync();
     }
 
+    public async Task RefreshAsync()
+    {
+        await LoadSummaryAsync();
+        await LoadOverviewAsync();
+    }
+
     private async Task LoadOverviewAsync()
     {
         UserRating? userRating = OverviewRatingBox.SelectedIndex == 0
@@ -139,7 +145,7 @@ public partial class OverviewView : UserControl
         _overviewPage++;
         await LoadOverviewAsync();
     }
-    private async void OverviewCard_Click(object sender, RoutedEventArgs e)
+    private void OverviewCard_Click(object sender, RoutedEventArgs e)
     {
         var border = (Border)sender;
         var data = (CardOverviewDto)border.DataContext;
