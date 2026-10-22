@@ -52,11 +52,16 @@
                             CornerRadius="10" Padding="10" Margin="4" Height="116" Cursor="Hand" MouseLeftButtonUp="OverviewCard_Click">
                             <StackPanel>
                                 <Grid>
-                                <Button Style="{StaticResource DeleteButtonStyle}"
-                                        HorizontalAlignment="Right" VerticalAlignment="Top"
-                                        Click="DeleteCardButton_Click"/>
-                                <TextBlock Text="{Binding CategoryName}" FontSize="11"
-                                       Foreground="#6B7280" TextTrimming="CharacterEllipsis"/>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Text="{Binding CategoryName}" FontSize="11"
+                                            Foreground="#6B7280" TextTrimming="CharacterEllipsis"
+                                            VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Style="{StaticResource DeleteButtonStyle}"
+                                            Click="DeleteCardButton_Click"/>
                                 </Grid>
                                 <TextBlock Text="{Binding Question}" FontSize="13" FontWeight="SemiBold"
                                        Foreground="#111827" TextWrapping="Wrap"
