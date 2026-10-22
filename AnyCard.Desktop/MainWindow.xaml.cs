@@ -25,6 +25,7 @@ public partial class MainWindow : Window
 
         _overviewView = new OverviewView(_apiClient);
         _overviewView.SessionExpired += (s, e) => ShowLoginScreen();
+        
 
         _createCardView = new CreateCardView(_apiClient);
         _createCardView.SessionExpired += (s, e) => ShowLoginScreen();
@@ -32,6 +33,12 @@ public partial class MainWindow : Window
 
         _reviewView = new ReviewView(_apiClient);
         _reviewView.SessionExpired += (s, e) => ShowLoginScreen();
+        _reviewView.SingleCardReviewed += async (s, e) => await ShowOverviewAsync();
+        _overviewView.CardSelected += async (s, cardId) =>
+        {
+            ShowCardsScreen();
+            await _reviewView.LoadCardAsync(cardId);
+        };
 
         _authView = new AuthView(_apiClient);
         _authView.LoggedIn += async (s, e) =>
@@ -155,6 +162,11 @@ public partial class MainWindow : Window
     }
 
     private async void ShowAllCardsButton_Click(object sender, RoutedEventArgs e)
+    {
+        await ShowOverviewAsync();
+    }
+
+    private async Task ShowOverviewAsync()
     {
         HideAllScreens();
         BackToCardsButton.Visibility = Visibility.Visible;

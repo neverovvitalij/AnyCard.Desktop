@@ -14,14 +14,18 @@ public partial class ReviewView : UserControl
     public event EventHandler? SessionExpired;
     private List<CardDto> _dueCards = new();
     private int _currentCardIndex = 0;
+    private bool _isSingleCardMode = false;
+    public event EventHandler? SingleCardReviewed;
     public ReviewView(ApiClient apiClient)
     {
         InitializeComponent();
         _apiClient = apiClient;
+        
     }
 
     public async Task<bool> LoadAsync(int? categoryId)
     {
+
         var apiResult = await _apiClient.GetDueCardsAsync(categoryId);
         if (apiResult.Error == ApiError.Unauthorized)
         {
@@ -40,6 +44,7 @@ public partial class ReviewView : UserControl
         }
         _dueCards = apiResult.Data ?? new List<CardDto>();
         _currentCardIndex = 0;
+        _isSingleCardMode = false;
         ShowCurrentCard();
         return true;
     }
@@ -76,8 +81,40 @@ public partial class ReviewView : UserControl
         {
             MessageBox.Show("Fehler beim Bewerten der Karte.");
         }
+        if (_isSingleCardMode)
+        {
+            _isSingleCardMode = false;
+            SingleCardReviewed?.Invoke(this, EventArgs.Empty);
+            return;
+        }
         _currentCardIndex++;
         ShowCurrentCard();
+    }
+
+    public async Task<bool> LoadCardAsync(int cardId)
+    {
+        var response = await _apiClient.GetCardByIdAsync(cardId);
+        if (response.Error == ApiError.Unauthorized)
+        {
+            SessionExpired?.Invoke(this, EventArgs.Empty);
+            return false;
+        }
+        if (response.Error == ApiError.NetworkUnavailable)
+        {
+            MessageBox.Show("Server nicht erreichbar.");
+            return false;
+        }
+        if (response.Error != ApiError.None)
+        {
+            MessageBox.Show("Fehler beim Laden der Karte.");
+            return false;
+        }
+
+        _dueCards = new List<CardDto> { response.Data! };
+        _currentCardIndex = 0;
+        _isSingleCardMode = true;
+        ShowCurrentCard();
+        return true;
     }
     private void ShowAnswerButton_Click(object sender, RoutedEventArgs e)
     {

@@ -8,7 +8,7 @@
              d:DesignHeight="450" d:DesignWidth="800">
 
     <Border x:Name="OverviewPanel" Background="White" CornerRadius="16" Padding="20"
-        Width="580" HorizontalAlignment="Center" VerticalAlignment="Center">
+        Width="580" HorizontalAlignment="Center" VerticalAlignment="Center" >
         <Border.Effect>
             <DropShadowEffect Color="#000000" Opacity="0.12" BlurRadius="20" ShadowDepth="3"/>
         </Border.Effect>
@@ -49,7 +49,7 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Border Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1"
-                            CornerRadius="10" Padding="10" Margin="4" Height="116">
+                            CornerRadius="10" Padding="10" Margin="4" Height="116" Cursor="Hand" MouseLeftButtonUp="OverviewCard_Click">
                             <StackPanel>
                                 <TextBlock Text="{Binding CategoryName}" FontSize="11"
                                        Foreground="#6B7280" TextTrimming="CharacterEllipsis"/>

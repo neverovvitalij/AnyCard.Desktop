@@ -346,4 +346,6 @@ public class ApiClient
     }
 
     public Task<ApiResult<UserSettingsDto>> GetDefaultSettingsAsync() => GetAsync<UserSettingsDto>("settings/defaults");
+
+    public Task<ApiResult<CardDto>> GetCardByIdAsync(int cardId) => GetAsync<CardDto>($"cards/{cardId}");
 }

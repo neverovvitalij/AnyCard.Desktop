@@ -14,6 +14,7 @@ public partial class OverviewView : UserControl
     private int _overviewPage = 1;
     private bool _isInitializing = true;
     private readonly CategoryDto _allCategoriesOption = new(0, "Kategorien");
+    public event EventHandler<int>? CardSelected;
     public OverviewView(ApiClient apiClient)
     {
         InitializeComponent();
@@ -137,5 +138,11 @@ public partial class OverviewView : UserControl
     {
         _overviewPage++;
         await LoadOverviewAsync();
+    }
+    private async void OverviewCard_Click(object sender, RoutedEventArgs e)
+    {
+        var border = (Border)sender;
+        var data = (CardOverviewDto)border.DataContext;
+        CardSelected?.Invoke(this, data.CardId);
     }
 }
