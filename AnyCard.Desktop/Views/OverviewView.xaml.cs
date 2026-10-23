@@ -92,11 +92,18 @@ public partial class OverviewView : UserControl
             return;
         }
 
+        if(response.Data!.TotalPages > 0 && response.Data.TotalPages < _overviewPage)
+        {
+            _overviewPage = response.Data.TotalPages;
+            await LoadOverviewAsync();
+            return;
+        }
+
         var result = response.Data!.Items.Select(ct => ct with { NextShowtime = ct.NextShowtime.ToLocalTime() }).ToList();
         OverviewCardsList.ItemsSource = result;
         OverviewEmptyText.Visibility = result.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
-        PageInfoText.Text = $"Seite {response.Data.PageNumber} von {response.Data.TotalPages}";
+        PageInfoText.Text = $"Seite {(response.Data.TotalPages == 0 ? 0 : response.Data.PageNumber)} von {response.Data.TotalPages}";
         PreviousPageButton.IsEnabled = response.Data.PageNumber > 1;
         NextPageButton.IsEnabled = response.Data.TotalPages > response.Data.PageNumber;
     }
